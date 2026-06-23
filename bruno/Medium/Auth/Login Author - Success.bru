@@ -1,0 +1,31 @@
+meta {
+  name: Login Author - Success
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{URL_API}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "author@medium.local",
+    "password": "Password123!"
+  }
+}
+
+vars:pre-request {
+  api_url: http://localhost:4000
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

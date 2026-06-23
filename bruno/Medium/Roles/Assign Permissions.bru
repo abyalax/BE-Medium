@@ -1,0 +1,22 @@
+meta {
+  name: Assign Permissions
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{URL_API}}/roles/36/permissions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "permissionIds": [11, 12, 13, 14, 15, 16]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

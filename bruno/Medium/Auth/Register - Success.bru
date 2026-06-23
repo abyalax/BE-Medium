@@ -1,0 +1,24 @@
+meta {
+  name: Register - Success
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{URL_API}}/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Rendy Manga",
+    "email": "rendymanga@gmail.com",
+    "password": "Secure_password123_"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

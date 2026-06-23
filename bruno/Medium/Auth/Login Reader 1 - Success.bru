@@ -1,0 +1,23 @@
+meta {
+  name: Login Reader 1 - Success
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{URL_API}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "user001@medium.local",
+    "password": "Password123!"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

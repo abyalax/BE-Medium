@@ -1,0 +1,54 @@
+.env
+
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Test results
+TestResults/
+
+# Publish output
+publish/
+
+# Logs
+logs/
+*.log
+
+# Entity Framework local database
+*.mdf
+*.ldf
+
+# NuGet
+*.nupkg
+packages/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Secrets
+appsettings.Development.json
+appsettings.Local.json
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml

@@ -1,0 +1,35 @@
+meta {
+  name: Login - Email Not Found
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{URL_API}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "adminfdwe@gmail.com",
+    "password": "Password123!"
+  }
+}
+
+vars:pre-request {
+  URL_API: http://localhost:5247/api
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Example case email does not found
+}

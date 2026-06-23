@@ -1,0 +1,26 @@
+meta {
+  name: Assign Roles to User
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{URL_API}}/users/7bb2c3d2-bc27-4d1f-adb5-7a56a41d2176/roles
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NDQ0NDQ0NC00NDQ0LTQ0NDQtNDQ0NC00NDQ0NDQ0NDQ0NDMiLCJlbWFpbCI6ImFkbWluQG1lZGl1bS5sb2NhbCIsImp0aSI6Ijk2NDBkOWZhLWUxMjItNDNhNy04OGJmLTljMjRmY2MzNGRjNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwicGVybWlzc2lvbiI6WyJhcnRpY2xlcy5nZXQiLCJib29rbWFya3MuY3JlYXRlIiwiYXV0aG9ycy5mb2xsb3ciLCJjb21tZW50cy5jcmVhdGUiLCJhdXRob3JzLmdldF9wcm9maWxlIiwicmVhZGluZ19oaXN0b3J5LmdldCIsImFydGljbGVzLmNyZWF0ZSIsImFydGljbGVzLnVwZGF0ZV9vd24iLCJhcnRpY2xlcy5wdWJsaXNoIiwiYXJ0aWNsZXMuYXJjaGl2ZSIsImFydGljbGVzLmRlbGV0ZV9vd24iLCJhbmFseXRpY3MuZ2V0X293biIsInVzZXJzLmdldCIsInVzZXJzLmNyZWF0ZSIsInVzZXJzLnVwZGF0ZSIsInRhZ3MubWFuYWdlIiwiYXJ0aWNsZXMubW9kZXJhdGUiLCJyb2xlcy5nZXQiLCJyb2xlcy5jcmVhdGUiLCJyb2xlcy51cGRhdGUiLCJyb2xlcy5kZWxldGUiLCJyb2xlcy5hc3NpZ25fcGVybWlzc2lvbnMiLCJyb2xlcy5hc3NpZ25fdXNlcnMiLCJwZXJtaXNzaW9ucy5nZXQiLCJwZXJtaXNzaW9ucy5jcmVhdGUiLCJwZXJtaXNzaW9ucy51cGRhdGUiLCJwZXJtaXNzaW9ucy5kZWxldGUiLCJhcnRpY2xlcy5kZWxldGVfYW55IiwiYW5hbHl0aWNzLmdldF9zeXN0ZW0iLCJhZG1pbi5tYW5hZ2VfZGF0YSJdLCJleHAiOjE3ODIxOTE1MzgsImlzcyI6Ik1lZGl1bS5BcGkiLCJhdWQiOiJNZWRpdW0uQXBpIn0.To1D8U-U-IeTVH8oqNOWIC0YLLDRfmNmcdPp_rBuK9A
+}
+
+body:json {
+  {
+    "roleIds": ['22222222-2222-2222-2222-222222222222']
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

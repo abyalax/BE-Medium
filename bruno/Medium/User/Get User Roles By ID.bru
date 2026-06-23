@@ -1,0 +1,49 @@
+meta {
+  name: Get User Roles By ID
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{URL_API}}/users//roles
+  body: json
+  auth: inherit
+}
+
+body:json {
+  ['22222222-2222-2222-2222-222222222222']
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Get User by ID
+  
+  Retrieves a specific user by their ID.
+  
+  ## Request
+  - **Method**: GET
+  - **Endpoint**: `/api/v1/users/:id`
+  
+  ## URL Parameters
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | integer | Yes | The user's unique identifier |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+  ```
+  
+  ## Error Responses
+  - **400 Bad Request**: Invalid user ID format
+  - **404 Not Found**: User not found
+  - **500 Internal Server Error**: Database or server error
+}

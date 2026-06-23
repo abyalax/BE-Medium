@@ -1,0 +1,16 @@
+meta {
+  name: Get Permission Role
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{URL_API}}/roles/38/permissions
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

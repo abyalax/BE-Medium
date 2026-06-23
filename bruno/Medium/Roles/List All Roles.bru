@@ -1,0 +1,20 @@
+meta {
+  name: List All Roles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{URL_API}}/roles
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~search: Event
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,61 @@
+meta {
+  name: Update User
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{URL_API}}/users/7bb2c3d2-bc27-4d1f-adb5-7a56a41d2176
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+    "name": "John Doe Assue",
+    "email": "john@gmail.com",
+    "password": "securePassword123_"
+  }
+}
+
+docs {
+  # Update User
+  
+  Updates an existing user's information. All fields are optional - only provide the fields you want to update.
+  
+  ## Request
+  - **Method**: PUT
+  - **Endpoint**: `/api/v1/users/:id`
+  - **Content-Type**: application/json
+  
+  ## URL Parameters
+  | Parameter | Type | Required | Description |
+  |-----------|------|----------|-------------|
+  | id | integer | Yes | The user's unique identifier |
+  
+  ## Request Body (all fields optional)
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | name | string | No | User's full name |
+  | email | string | No | User's email address (must be valid) |
+  | password | string | No | User's password (minimum 6 characters) |
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "id": 1,
+    "name": "John Smith",
+    "email": "john.smith@example.com"
+  }
+  ```
+  
+  ## Error Responses
+  - **400 Bad Request**: Invalid user ID format or validation errors
+  - **404 Not Found**: User not found
+  - **409 Conflict**: Email already exists
+  - **500 Internal Server Error**: Database or server error
+}

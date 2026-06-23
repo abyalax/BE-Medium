@@ -1,0 +1,79 @@
+@Medium.Api_HostAddress = http://localhost:5247
+
+### Auth Endpoints
+
+POST {{Medium.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!",
+  "bio": "Software developer",
+  "avatarUrl": null
+}
+
+###
+
+POST {{Medium.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Role Endpoints
+
+POST {{Medium.Api_HostAddress}}/api/roles/
+Content-Type: application/json
+
+{
+  "name": "Admin",
+  "description": "Administrator role with full access"
+}
+
+###
+
+GET {{Medium.Api_HostAddress}}/api/roles/
+Accept: application/json
+
+###
+
+POST {{Medium.Api_HostAddress}}/api/roles/{roleId}/permissions/{permissionId}
+
+###
+
+POST {{Medium.Api_HostAddress}}/api/roles/users/{userId}/roles/{roleId}
+
+###
+
+### Permission Endpoints
+
+POST {{Medium.Api_HostAddress}}/api/permissions/
+Content-Type: application/json
+
+{
+  "code": "article.create",
+  "name": "Create Article",
+  "description": "Permission to create articles"
+}
+
+###
+
+GET {{Medium.Api_HostAddress}}/api/permissions/
+Accept: application/json
+
+###
+
+GET {{Medium.Api_HostAddress}}/api/permissions/roles/{roleId}
+Accept: application/json
+
+###
+
+GET {{Medium.Api_HostAddress}}/api/permissions/users/{userId}
+Accept: application/json
+
+###

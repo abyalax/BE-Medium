@@ -1,0 +1,47 @@
+meta {
+  name: List Following User
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{URL_API}}/follows/following/44444444-4444-4444-4444-444444444441?page=1&pageSize=10
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  pageSize: 10
+}
+
+docs {
+  # List All Users
+  
+  Retrieves a list of all users in the system.
+  
+  ## Request
+  - **Method**: GET
+  - **Endpoint**: `/api/v1/users`
+  
+  ## Response (200 OK)
+  ```json
+  {
+    "data": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
+    ]
+  }
+  ```
+  
+  ## Error Responses
+  - **500 Internal Server Error**: Database or server error
+}
