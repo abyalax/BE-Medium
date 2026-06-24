@@ -7,11 +7,11 @@ namespace Medium.Api.Domain.Notification.Module;
 
 public static class NotificationModule
 {
-    public static IServiceCollection AddNotificationModule(this IServiceCollection services)
-    {
-        services.AddScoped<NotificationRepository>();
-        services.AddScoped<NotificationService>();
+  public static IServiceCollection AddNotificationModule(this IServiceCollection services)
+  {
+    services.AddScoped<NotificationRepository>();
+    services.AddScoped<NotificationService>();
 
-        return services;
-    }
+    return services;
+  }
 }

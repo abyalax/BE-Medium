@@ -1,6 +1,7 @@
 namespace Medium.Api.Domain.Article.Dtos;
 
 using System.Text.Json.Serialization;
+
 using Medium.Api.Enums;
 
 public record CreateArticleRequest(

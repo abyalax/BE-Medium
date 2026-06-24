@@ -1,12 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
-using Medium.Api.Infrastructure;
-using Medium.Api.Infrastructure.Auth;
-using Medium.Api.Infrastructure.Logging;
-using Medium.Api.Infrastructure.Filters;
-using Medium.Api.Infrastructure.Extensions;
-using Medium.Api.Infrastructure.Database;
-using Medium.Api.Infrastructure.Database.Seeds;
 using Medium.Api.Http.Api.Version1.Article;
 using Medium.Api.Http.Api.Version1.Auth;
 using Medium.Api.Http.Api.Version1.Bookmark;
@@ -15,6 +6,15 @@ using Medium.Api.Http.Api.Version1.Follow;
 using Medium.Api.Http.Api.Version1.ReadingHistory;
 using Medium.Api.Http.Api.Version1.Tag;
 using Medium.Api.Http.Api.Version1.Users;
+using Medium.Api.Infrastructure;
+using Medium.Api.Infrastructure.Auth;
+using Medium.Api.Infrastructure.Database;
+using Medium.Api.Infrastructure.Database.Seeds;
+using Medium.Api.Infrastructure.Extensions;
+using Medium.Api.Infrastructure.Filters;
+using Medium.Api.Infrastructure.Logging;
+
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +23,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions =>
         {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
+          sqlOptions.EnableRetryOnFailure(
+              maxRetryCount: 5,
+              maxRetryDelay: TimeSpan.FromSeconds(30),
+              errorNumbersToAdd: null);
         })
     .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
 
@@ -46,8 +46,8 @@ if (await DatabaseSeederRunner.HandleSeedCommandAsync(args, app)) return; // Sto
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

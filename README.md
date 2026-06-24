@@ -4,8 +4,8 @@
 
 Before getting started, make sure the following tools are installed on your machine:
 
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or a newer version.
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or a newer version.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ## Entity Framework Core (Database Schema Management)
 
@@ -102,6 +102,13 @@ dotnet restore
 
 # Remove generated bin/ and obj/ directories from previous builds
 dotnet clean
+```
+
+### Format Code
+
+```bash
+# Format all files with config .editorconfig
+dotnet format
 ```
 
 ## API Testing with Bruno

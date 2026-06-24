@@ -2,10 +2,10 @@ namespace Medium.Api.Domain.Notification.Dtos;
 
 public enum NotificationType
 {
-    ArticlePublished,
-    CommentCreated,
-    UserFollowed,
-    Mention
+  ArticlePublished,
+  CommentCreated,
+  UserFollowed,
+  Mention
 }
 
 public record CreateNotificationRequest(

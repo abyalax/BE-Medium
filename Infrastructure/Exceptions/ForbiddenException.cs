@@ -4,8 +4,8 @@ namespace Medium.Api.Infrastructure.Exceptions;
 
 public sealed class ForbiddenException : ApiException
 {
-    public ForbiddenException(string message)
-        : base(HttpStatusCode.NotFound, message)
-    {
-    }
+  public ForbiddenException(string message)
+      : base(HttpStatusCode.NotFound, message)
+  {
+  }
 }

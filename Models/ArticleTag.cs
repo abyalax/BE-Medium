@@ -2,11 +2,11 @@ namespace Medium.Api.Models;
 
 public class ArticleTag
 {
-    public Guid ArticleId { get; set; }
+  public Guid ArticleId { get; set; }
 
-    public Guid TagId { get; set; }
+  public Guid TagId { get; set; }
 
-    public Article Article { get; set; } = null!;
+  public Article Article { get; set; } = null!;
 
-    public Tag Tag { get; set; } = null!;
+  public Tag Tag { get; set; } = null!;
 }
