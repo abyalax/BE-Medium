@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Medium.Api.Domain.Auth.DTOs;
-using Medium.Api.Domain.Users.Dtos;
+using Medium.Api.Domain.User.Dtos;
 using Medium.Api.Infrastructure.Database;
-using Medium.Api.Models;
+using UserModel = Medium.Api.Models.User;
+using RoleModel = Medium.Api.Models.Role;
+using UserRoleModel = Medium.Api.Models.UserRole;
 
-namespace Medium.Api.Domain.Users.Repositories;
+namespace Medium.Api.Domain.User.Repositories;
 
 public class UserRepository
 {
@@ -15,12 +17,12 @@ public class UserRepository
         _context = context;
     }
 
-    public async Task AddAsync(User user, CancellationToken cancellationToken = default)
+    public async Task AddAsync(UserModel user, CancellationToken cancellationToken = default)
     {
         await _context.Users.AddAsync(user, cancellationToken);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<UserModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Users.FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
     }
@@ -82,13 +84,13 @@ public class UserRepository
             cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<Role>> GetRolesByIdsAsync(IEnumerable<Guid> roleIds, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<RoleModel>> GetRolesByIdsAsync(IEnumerable<Guid> roleIds, CancellationToken cancellationToken = default)
     {
         var ids = roleIds.Distinct().ToArray();
         return await _context.Roles.Where(role => ids.Contains(role.Id)).ToListAsync(cancellationToken);
     }
 
-    public async Task<Role?> GetRoleByNameAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<RoleModel?> GetRoleByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await _context.Roles.FirstOrDefaultAsync(role => role.Name == name, cancellationToken);
     }
@@ -102,11 +104,11 @@ public class UserRepository
         _context.UserRoles.RemoveRange(existingRoles);
 
         await _context.UserRoles.AddRangeAsync(
-            roleIds.Distinct().Select(roleId => new UserRole { UserId = userId, RoleId = roleId }),
+            roleIds.Distinct().Select(roleId => new UserRoleModel { UserId = userId, RoleId = roleId }),
             cancellationToken);
     }
 
-    public void Remove(User user)
+    public void Remove(UserModel user)
     {
         _context.Users.Remove(user);
     }

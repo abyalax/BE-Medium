@@ -1,10 +1,10 @@
-using Medium.Api.Domain.Users.Dtos;
-using Medium.Api.Domain.Users.Repositories;
+using Medium.Api.Domain.User.Dtos;
+using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Exceptions;
-using Medium.Api.Models;
+using UserModel = Medium.Api.Models.User;
 
-namespace Medium.Api.Domain.Users.Services;
+namespace Medium.Api.Domain.User.Services;
 
 public class UserService
 {
@@ -28,7 +28,7 @@ public class UserService
         }
 
         var roleIds = await ResolveRoleIdsAsync(request.RoleIds, cancellationToken);
-        var user = new User
+        var user = new UserModel
         {
             Id = Guid.NewGuid(),
             Name = request.Name,

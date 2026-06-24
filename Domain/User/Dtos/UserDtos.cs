@@ -1,6 +1,6 @@
 using Medium.Api.Domain.Auth.DTOs;
 
-namespace Medium.Api.Domain.Users.Dtos;
+namespace Medium.Api.Domain.User.Dtos;
 
 public record CreateUserRequest(
     string Name,

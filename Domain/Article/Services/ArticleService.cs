@@ -11,19 +11,21 @@ public class ArticleService
     private const int MaxPageSize = 100;
     private readonly ArticleRepository _articleRepository;
 
-    private readonly ILogger<ArticleService> logger;
+    private readonly ILogger<ArticleService> _logger;
 
     private readonly string messageNotFound = "Article not found";
 
-    public ArticleService(ArticleRepository articleRepository)
+    public ArticleService(ArticleRepository articleRepository, ILogger<ArticleService> logger)
     {
         _articleRepository = articleRepository;
+        _logger = logger;
     }
 
     public async Task<ArticleResponse> CreateAsync(
         Guid authorId,
         CreateArticleRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
 
         var slug = GenerateSlug(request.Title);
@@ -56,6 +58,7 @@ public class ArticleService
             await _articleRepository.SaveChangesAsync(cancellationToken);
         }
 
+        _logger.LogDebug("Create article: {@Article}", article);
         return await GetByIdAsync(article.Id, cancellationToken);
     }
 
@@ -287,7 +290,8 @@ public class ArticleService
         Guid id,
         Guid currentUserId,
         bool isAdmin,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException(messageNotFound);
@@ -312,7 +316,8 @@ public class ArticleService
         Guid id,
         Guid currentUserId,
         bool isAdmin,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException(messageNotFound);
@@ -338,7 +343,8 @@ public class ArticleService
 
     private async Task<IReadOnlyCollection<Guid>> ResolveTagIdsAsync(
         IReadOnlyCollection<Guid>? tagIds,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (tagIds is null || tagIds.Count == 0)
         {

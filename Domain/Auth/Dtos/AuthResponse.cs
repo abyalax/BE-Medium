@@ -1,4 +1,4 @@
-using Medium.Api.Domain.Users.Dtos;
+using Medium.Api.Domain.User.Dtos;
 
 namespace Medium.Api.Domain.Auth.DTOs;
 

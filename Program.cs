@@ -30,8 +30,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         })
     .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
 
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddDomainServices();
+builder.Services.AddModule(builder.Configuration);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

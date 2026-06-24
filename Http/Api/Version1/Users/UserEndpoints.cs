@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Medium.Api.Domain.Users.Dtos;
-using Medium.Api.Domain.Users.Services;
+using Medium.Api.Domain.User.Dtos;
+using Medium.Api.Domain.User.Services;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Filters;
 using Medium.Api.Infrastructure.Http;

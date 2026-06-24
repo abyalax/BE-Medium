@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Medium.Api.Domain.Auth.DTOs;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Database;
-using Medium.Api.Domain.Users.Repositories;
-using Medium.Api.Domain.Users.Dtos;
-using Medium.Api.Models;
+using Medium.Api.Domain.User.Repositories;
+using Medium.Api.Domain.User.Dtos;
 using Medium.Api.Infrastructure.Exceptions;
+using UserModel = Medium.Api.Models.User;
+using UserRoleModel = Medium.Api.Models.UserRole;
 
 namespace Medium.Api.Domain.Auth.Services;
 
@@ -38,7 +39,7 @@ public class AuthService
             throw new ConflictException("User with this email already exists");
         }
 
-        var user = new User
+        var user = new UserModel
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
@@ -58,7 +59,7 @@ public class AuthService
 
         if (defaultRole != null)
         {
-            _context.UserRoles.Add(new UserRole
+            _context.UserRoles.Add(new UserRoleModel
             {
                 UserId = user.Id,
                 RoleId = defaultRole.Id

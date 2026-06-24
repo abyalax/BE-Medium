@@ -1,7 +1,7 @@
 using FluentValidation;
 using Medium.Api.Http.Api.Version1.Users;
 
-namespace Medium.Api.Domain.Users.Dtos;
+namespace Medium.Api.Domain.User.Dtos;
 
 public sealed class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
