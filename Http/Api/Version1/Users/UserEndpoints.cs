@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
 using Medium.Api.Domain.User.Dtos;
 using Medium.Api.Domain.User.Services;
 using Medium.Api.Infrastructure.Auth;
@@ -15,6 +18,18 @@ public static class UserEndpoints
     var group = app.MapGroup("/api/users")
         .WithTags("Users")
         .AddEndpointFilter<ValidationEndpointFilter>();
+
+    group.MapGet("/me", async (
+        HttpContext httpContext,
+        UserService userService,
+        CancellationToken cancellationToken) =>
+    {
+      var userId = Guid.Parse(httpContext.User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+      return Results.Json(ApiResponseWriter.Success(await userService.GetByIdAsync(userId, cancellationToken)));
+    })
+    .RequireAuthorization()
+    .WithName("GetCurrentUser")
+    .WithOpenApi();
 
     group.MapGet("/", async (
         [FromQuery] int page,

@@ -42,8 +42,6 @@ public class ArticlePublishedEventHandler : IEventHandler<ArticlePublishedEvent>
     {
       _logger.LogInformation("Handling ArticlePublished: {ArticleId}", @event.ArticleId);
 
-      // TODO: Update search index - would require search service integration
-
       // Send notification to followers via email
       var followers = await _followRepository.GetFollowersAsync(
           Guid.Parse(@event.AuthorId), 1, 100, default);
@@ -72,8 +70,6 @@ public class ArticlePublishedEventHandler : IEventHandler<ArticlePublishedEvent>
         var emailHtml = await _emailTemplateService.RenderTemplateAsync("ArticlePublishedEmail", emailModel);
         await _emailService.SendAsync(follow.Follower.Email, "New Article Published", emailHtml, default);
       }
-
-      // TODO: Add to timeline - would require timeline/feed service
 
       _logger.LogInformation("ArticlePublished event processed for {ArticleId}. Notified {Count} followers.",
           @event.ArticleId, followers.Count);

@@ -81,9 +81,6 @@ public class CommentCreatedEventHandler : IEventHandler<CommentCreatedEvent>
         }
       }
 
-      // Update comment count - would need to add this to article model
-      // TODO: Add comment count field to Article model and update here
-
       // Check for mentions
       var mentions = ExtractMentions(@event.Content);
       foreach (var mentionedUserId in mentions)

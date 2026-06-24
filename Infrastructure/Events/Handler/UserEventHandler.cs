@@ -68,11 +68,6 @@ public class UserFollowedEventHandler : IEventHandler<UserFollowedEvent>
       var emailHtml = await _emailTemplateService.RenderTemplateAsync("UserFollowedEmail", emailModel);
       await _emailService.SendAsync(following.Email, "New Follower", emailHtml, default);
 
-      // Update follower counts - would need to add this to User model
-      // TODO: Add follower/following count fields to User model and update here
-
-      // TODO: Update cache - would require cache service integration
-
       _logger.LogInformation("UserFollowed event processed: {FollowerId} -> {FollowingId}", @event.FollowerId, @event.FollowingId);
     }
     catch (Exception ex)
