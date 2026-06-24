@@ -6,11 +6,9 @@ using Medium.Api.Domain.Notification.Services;
 using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Email.Models;
 using Medium.Api.Infrastructure.Email.Services;
-using Medium.Api.Infrastructure.Events.Events;
+using Medium.Api.Infrastructure.Nats.Events;
 
-using Microsoft.Extensions.Logging;
-
-namespace Medium.Api.Infrastructure.Events.Handler;
+namespace Medium.Api.Infrastructure.Nats.Handler;
 
 public class CommentCreatedEventHandler : IEventHandler<CommentCreatedEvent>
 {
@@ -107,7 +105,7 @@ public class CommentCreatedEventHandler : IEventHandler<CommentCreatedEvent>
     }
   }
 
-  private List<string> ExtractMentions(string content)
+  private static List<string> ExtractMentions(string content)
   {
     // Extract mentions like @userId or @username
     var mentions = new List<string>();

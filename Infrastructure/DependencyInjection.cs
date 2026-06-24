@@ -8,8 +8,8 @@ using Medium.Api.Domain.ReadingHistory.Module;
 using Medium.Api.Domain.Tag.Module;
 using Medium.Api.Domain.User.Module;
 using Medium.Api.Infrastructure.Email.Module;
-using Medium.Api.Infrastructure.Events.Handler;
 using Medium.Api.Infrastructure.Nats.Module;
+using Medium.Api.Infrastructure.Nats.Handler;
 using Medium.Api.Infrastructure.Scheduler.Module;
 
 namespace Medium.Api.Infrastructure;

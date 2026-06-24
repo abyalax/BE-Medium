@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Medium.Api.Infrastructure.Events.Events;
+namespace Medium.Api.Infrastructure.Nats.Events;
 
 public record ArticlePublishedEvent(
     [property: JsonPropertyName("id")] string ArticleId,

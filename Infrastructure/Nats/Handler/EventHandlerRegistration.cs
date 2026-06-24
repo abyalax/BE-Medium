@@ -1,13 +1,12 @@
-using Medium.Api.Infrastructure.Events.Events;
-using Medium.Api.Infrastructure.Events.Handler;
+using Medium.Api.Infrastructure.Nats.Events;
 
-namespace Medium.Api.Infrastructure.Events.Module;
+namespace Medium.Api.Infrastructure.Nats.Handler;
 
-public static class EventModule
+public static class EventHandlerRegistration
 {
-  public static IServiceCollection AddEventHandler(
-      this IServiceCollection services)
+  public static IServiceCollection AddEventHandler(this IServiceCollection services)
   {
+
     services.AddScoped<IEventHandler<ArticlePublishedEvent>, ArticlePublishedEventHandler>();
     services.AddScoped<IEventHandler<CommentCreatedEvent>, CommentCreatedEventHandler>();
     services.AddScoped<IEventHandler<UserFollowedEvent>, UserFollowedEventHandler>();

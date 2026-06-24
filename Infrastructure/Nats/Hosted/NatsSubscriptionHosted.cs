@@ -1,5 +1,5 @@
-using Medium.Api.Infrastructure.Events.Events;
-using Medium.Api.Infrastructure.Events.Handler;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Handler;
 using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Infrastructure.Nats.Hosted;

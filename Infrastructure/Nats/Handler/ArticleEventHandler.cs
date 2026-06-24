@@ -3,11 +3,9 @@ using Medium.Api.Domain.Notification.Dtos;
 using Medium.Api.Domain.Notification.Services;
 using Medium.Api.Infrastructure.Email.Models;
 using Medium.Api.Infrastructure.Email.Services;
-using Medium.Api.Infrastructure.Events.Events;
+using Medium.Api.Infrastructure.Nats.Events;
 
-using Microsoft.Extensions.Logging;
-
-namespace Medium.Api.Infrastructure.Events.Handler;
+namespace Medium.Api.Infrastructure.Nats.Handler;
 
 public interface IEventHandler<in T> where T : class
 {
@@ -63,7 +61,7 @@ public class ArticlePublishedEventHandler : IEventHandler<ArticlePublishedEvent>
             follow.Follower.Name,
             follow.Following.Name,
             @event.Title,
-            @event.Title.Length > 150 ? @event.Title.Substring(0, 150) + "..." : @event.Title,
+            @event.Title.Length > 150 ? string.Concat(@event.Title.AsSpan(0, 150), "...") : @event.Title,
             $"/articles/{@event.ArticleId}"
         );
 

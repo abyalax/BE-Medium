@@ -3,7 +3,7 @@ using Coravel.Invocable;
 using Medium.Api.Domain.Article.Dtos;
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Domain.Article.Services;
-using Medium.Api.Infrastructure.Events.Events;
+using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
