@@ -1,0 +1,42 @@
+@model Medium.Api.Infrastructure.Email.Models.ArticlePublishedEmailModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Article Published</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #24292e; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .article-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .article-content { margin-bottom: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #0366d6; color: white; text-decoration: none; border-radius: 4px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Article Published</h1>
+        </div>
+        <div class="content">
+            <p>Hi @Model.FollowerName,</p>
+            <p>@Model.AuthorName has just published a new article:</p>
+            <div class="article-title">@Model.ArticleTitle</div>
+            <div class="article-content">
+                <p>@Model.ArticlePreview</p>
+            </div>
+            <p>
+                <a href="@Model.ArticleUrl" class="button">Read Article</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>You're receiving this email because you follow @Model.AuthorName on Medium.</p>
+            <p>&copy; @DateTime.UtcNow.Year Medium Clone. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -37,7 +37,8 @@ public record PagedResponse<T>(
     int Page,
     int PageSize,
     int TotalItems,
-    int TotalPages);
+    int TotalPages
+);
 
 public record UserWithRolesPermissionsData(
     Guid Id,

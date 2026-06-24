@@ -113,4 +113,9 @@ public class FollowRepository
             follow.Following.Name,
             follow.CreatedAt);
     }
+
+    public async Task<int> GetTotalFollowsCountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Follows.CountAsync(cancellationToken);
+    }
 }

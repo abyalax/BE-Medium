@@ -95,4 +95,19 @@ public class CommentRepository
             comment.CreatedAt,
             comment.UpdatedAt);
     }
+
+    public async Task<IReadOnlyCollection<CommentModel>> GetCommentsSinceAsync(DateTime since, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .Include(c => c.User)
+            .Where(c => c.CreatedAt >= since)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetCommentsCountSinceAsync(DateTime since, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .CountAsync(c => c.CreatedAt >= since, cancellationToken);
+    }
 }

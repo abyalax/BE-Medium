@@ -283,4 +283,18 @@ public class ArticleRepository
             article.CreatedAt,
             article.UpdatedAt);
     }
+
+    public async Task<IReadOnlyCollection<ArticleModel>> GetScheduledArticlesToPublishAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Articles
+            .Include(a => a.Author)
+            .Where(a => a.Status == Enums.ArticleStatus.Scheduled && a.ScheduledAt <= DateTime.UtcNow)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetArticlesCountSinceAsync(DateTime since, CancellationToken cancellationToken = default)
+    {
+        return await _context.Articles
+            .CountAsync(a => a.CreatedAt >= since, cancellationToken);
+    }
 }

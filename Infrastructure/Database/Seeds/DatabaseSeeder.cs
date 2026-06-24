@@ -4,12 +4,10 @@ using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Models;
 using AuthPermissions = Medium.Api.Infrastructure.Auth.Permissions;
 
-namespace Medium.Api.Infrastructure.Database;
+namespace Medium.Api.Infrastructure.Database.Seeds;
 
 public static class DatabaseSeeder
 {
-    private const string DefaultPassword = "Password123!";
-
     private static readonly Guid ReaderRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid AuthorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid AdminRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -55,10 +53,17 @@ public static class DatabaseSeeder
         var context = services.GetRequiredService<ApplicationDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
+        DatabaseMockData.Initialize(passwordHasher);
+
         await SeedRolesAsync(context, cancellationToken);
         await SeedPermissionsAsync(context, cancellationToken);
         await SeedRolePermissionsAsync(context, cancellationToken);
-        await SeedUsersAsync(context, passwordHasher, cancellationToken);
+        await SeedUsersAsync(context, cancellationToken);
+
+        await SeedTagsAsync(context, cancellationToken);
+        await SeedArticlesAndTagsAsync(context, cancellationToken);
+        await SeedUserInteractionsAsync(context, cancellationToken);
+        await SeedNewsLetterSubscriptionsAsync(context, cancellationToken);
     }
 
     private static async Task SeedRolesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
@@ -141,7 +146,8 @@ public static class DatabaseSeeder
         ApplicationDbContext context,
         Guid roleId,
         HashSet<string> permissionCodes,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var permissionIds = await context.Permissions
             .Where(permission => permissionCodes.Contains(permission.Code))
@@ -162,79 +168,115 @@ public static class DatabaseSeeder
 
     private static async Task SeedUsersAsync(
         ApplicationDbContext context,
-        IPasswordHasher passwordHasher,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var deterministicUsers = new[]
+        // Ambil langsung dari data yang sudah di-initialize di DatabaseMockData
+        foreach (var user in DatabaseMockData.GeneratedUsers)
         {
-            new UserSeed(Guid.Parse("44444444-4444-4444-4444-444444444441"), "Reader User", "reader@medium.local", ReaderRoleId),
-            new UserSeed(Guid.Parse("44444444-4444-4444-4444-444444444442"), "Author User", "author@medium.local", AuthorRoleId),
-            new UserSeed(Guid.Parse("44444444-4444-4444-4444-444444444443"), "Admin User", "admin@medium.local", AdminRoleId)
-        };
-
-        foreach (var seed in deterministicUsers)
-        {
-            await AddUserIfMissingAsync(context, passwordHasher, seed.Id, seed.Name, seed.Email, seed.RoleId, cancellationToken);
+            if (!await context.Users.AnyAsync(u => u.Email == user.Email, cancellationToken))
+            {
+                await context.Users.AddAsync(user, cancellationToken);
+            }
         }
 
-        Randomizer.Seed = new Random(20260622);
-        var faker = new Faker("en")
+        foreach (var userRole in DatabaseMockData.GeneratedUserRoles)
         {
-            Random = new Randomizer(20260622)
-        };
-
-        for (var index = 1; index <= 100; index++)
-        {
-            var email = $"user{index:000}@medium.local";
-            await AddUserIfMissingAsync(
-                context,
-                passwordHasher,
-                Guid.Parse($"55555555-5555-5555-5555-{index:000000000000}"),
-                faker.Name.FullName(),
-                email,
-                ReaderRoleId,
-                cancellationToken,
-                faker.Lorem.Sentence(10),
-                faker.Internet.Avatar());
+            if (!await context.UserRoles.AnyAsync(ur => ur.UserId == userRole.UserId && ur.RoleId == userRole.RoleId, cancellationToken))
+            {
+                await context.UserRoles.AddAsync(userRole, cancellationToken);
+            }
         }
 
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task AddUserIfMissingAsync(
-        ApplicationDbContext context,
-        IPasswordHasher passwordHasher,
-        Guid userId,
-        string name,
-        string email,
-        Guid roleId,
-        CancellationToken cancellationToken,
-        string? bio = null,
-        string? avatarUrl = null)
-    {
-        if (!await context.Users.AnyAsync(user => user.Email == email, cancellationToken))
-        {
-            await context.Users.AddAsync(new User
-            {
-                Id = userId,
-                Name = name,
-                Email = email,
-                Password = passwordHasher.HashPassword(DefaultPassword),
-                Bio = bio,
-                AvatarUrl = avatarUrl
-            }, cancellationToken);
-        }
-
-        if (!await context.UserRoles.AnyAsync(userRole => userRole.UserId == userId && userRole.RoleId == roleId, cancellationToken))
-        {
-            await context.UserRoles.AddAsync(new UserRole { UserId = userId, RoleId = roleId }, cancellationToken);
-        }
-    }
 
     private sealed record PermissionSeed(string IdValue, string Code, string Name, string Description)
     {
         public Guid Id { get; } = Guid.Parse(IdValue);
     }
 
-    private sealed record UserSeed(Guid Id, string Name, string Email, Guid RoleId);
+    private static async Task SeedTagsAsync(ApplicationDbContext context, CancellationToken token)
+    {
+        foreach (var tag in DatabaseMockData.GeneratedTags)
+        {
+            if (!await context.Tags.AnyAsync(t => t.Id == tag.Id || t.Slug == tag.Slug, token))
+            {
+                await context.Tags.AddAsync(tag, token);
+            }
+        }
+        await context.SaveChangesAsync(token);
+    }
+
+    private static async Task SeedArticlesAndTagsAsync(ApplicationDbContext context, CancellationToken token)
+    {
+        foreach (var article in DatabaseMockData.GeneratedArticles)
+        {
+            if (!await context.Articles.AnyAsync(a => a.Id == article.Id || a.Slug == article.Slug, token))
+            {
+                await context.Articles.AddAsync(article, token);
+            }
+        }
+        await context.SaveChangesAsync(token);
+
+        foreach (var artTag in DatabaseMockData.GeneratedArticleTags)
+        {
+            if (!await context.ArticleTags.AnyAsync(at => at.ArticleId == artTag.ArticleId && at.TagId == artTag.TagId, token))
+            {
+                await context.ArticleTags.AddAsync(artTag, token);
+            }
+        }
+        await context.SaveChangesAsync(token);
+    }
+
+    private static async Task SeedUserInteractionsAsync(ApplicationDbContext context, CancellationToken token)
+    {
+        foreach (var follow in DatabaseMockData.GeneratedFollows)
+        {
+            if (!await context.Follows.AnyAsync(f => f.FollowerId == follow.FollowerId && f.FollowingId == follow.FollowingId, token))
+            {
+                await context.Follows.AddAsync(follow, token);
+            }
+        }
+
+        foreach (var bmark in DatabaseMockData.GeneratedBookmarks)
+        {
+            if (!await context.Bookmarks.AnyAsync(b => b.UserId == bmark.UserId && b.ArticleId == bmark.ArticleId, token))
+            {
+                await context.Bookmarks.AddAsync(bmark, token);
+            }
+        }
+
+        foreach (var comment in DatabaseMockData.GeneratedComments)
+        {
+            if (!await context.Comments.AnyAsync(c => c.Id == comment.Id, token))
+            {
+                await context.Comments.AddAsync(comment, token);
+            }
+        }
+
+        foreach (var history in DatabaseMockData.GeneratedReadingHistories)
+        {
+            if (!await context.ReadingHistories.AnyAsync(rh => rh.Id == history.Id, token))
+            {
+                await context.ReadingHistories.AddAsync(history, token);
+            }
+        }
+
+        await context.SaveChangesAsync(token);
+    }
+
+    private static async Task SeedNewsLetterSubscriptionsAsync(ApplicationDbContext context, CancellationToken token)
+    {
+        foreach (var sub in DatabaseMockData.GeneratedSubscriptions)
+        {
+            if (!await context.NewsLetterSubscriptions.AnyAsync(s => s.Email == sub.Email, token))
+            {
+                await context.NewsLetterSubscriptions.AddAsync(sub, token);
+            }
+        }
+        await context.SaveChangesAsync(token);
+    }
+
 }

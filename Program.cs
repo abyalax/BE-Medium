@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Console;
+
 using Medium.Api.Infrastructure;
 using Medium.Api.Infrastructure.Auth;
-using Medium.Api.Infrastructure.Database;
-using Medium.Api.Infrastructure.Extensions;
-using Medium.Api.Infrastructure.Filters;
 using Medium.Api.Infrastructure.Logging;
+using Medium.Api.Infrastructure.Filters;
+using Medium.Api.Infrastructure.Extensions;
+using Medium.Api.Infrastructure.Database;
+using Medium.Api.Infrastructure.Database.Seeds;
 using Medium.Api.Http.Api.Version1.Article;
 using Medium.Api.Http.Api.Version1.Auth;
 using Medium.Api.Http.Api.Version1.Bookmark;
@@ -17,7 +18,6 @@ using Medium.Api.Http.Api.Version1.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -30,7 +30,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         })
     .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
 
-builder.Services.AddModule(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddModule();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -40,12 +41,8 @@ builder.Services.AddAuthorization(PermissionPolicies.Register);
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
-}
+// Intercept execution here if "--seed" argument is passed
+if (await DatabaseSeederRunner.HandleSeedCommandAsync(args, app)) return; // Stop execution immediately, preventing the web server from starting
 
 if (app.Environment.IsDevelopment())
 {
@@ -59,6 +56,8 @@ app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<ExceptionHandling>();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Services.ConfigureSchedulers();
 
 app.MapAuthEndpoints();
 app.MapRoleEndpoints();

@@ -1,0 +1,1 @@
+namespace Medium.Api.Domain.Notification.Dtos;

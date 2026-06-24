@@ -29,6 +29,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Follow> Follows => Set<Follow>();
     public DbSet<ReadingHistory> ReadingHistories => Set<ReadingHistory>();
     public DbSet<NewsLetterSubscription> NewsLetterSubscriptions => Set<NewsLetterSubscription>();
+    public DbSet<Notification> Notification => Set<Notification>();
 
     // RBAC Entities
     public DbSet<Role> Roles => Set<Role>();
@@ -57,6 +58,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
         modelBuilder.ApplyConfiguration(new RolePermissionConfiguration());
         modelBuilder.ApplyConfiguration(new ArticleTagConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationConfiguration());
 
         // Configure snake_case naming convention
         ConfigureSnakeCaseNaming(modelBuilder);
