@@ -45,7 +45,7 @@ Thumbs.db
 .env.*
 
 # Secrets
-appsettings.Development.json
+# appsettings.Development.json
 appsettings.Local.json
 
 # Coverage
