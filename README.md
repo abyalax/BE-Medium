@@ -104,4 +104,17 @@ dotnet restore
 dotnet clean
 ```
 
+## API Testing with Bruno
+
+The project includes a `bruno/` directory containing all API collections required for testing and development.
+
+### Import Bruno Collections
+
+1. Open Bruno.
+2. Select **Open Collection** or **Import Collection**.
+3. Navigate to the project's `bruno/` folder.
+4. Import the collection directly from that directory.
+
+No additional setup is required. The collection is maintained within the repository and should stay synchronized with the available API endpoints.
+
 _Last Updated 24 Juny 2026_
