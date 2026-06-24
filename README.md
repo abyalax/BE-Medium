@@ -1,107 +1,107 @@
-# 📝 .NET & EF Core Command Documentation
+# .NET & EF Core Command Documentation
 
-## 1. Entity Framework Core (Database Schema Management)
+## Prerequisites
 
-### Migrate UP (Menerapkan Perubahan Skema)
+Before getting started, make sure the following tools are installed on your machine:
 
-Digunakan untuk membuat database baru atau memperbarui skema database saat ini ke versi migrasi paling akhir.
+* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or a newer version.
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+## Entity Framework Core (Database Schema Management)
+
+### Migrate UP (Apply Schema Changes)
+
+Used to create a new database or update the current database schema to the latest migration version.
 
 ```bash
-# Menerapkan seluruh migrasi yang belum berjalan
+# Apply all pending migrations
 dotnet ef database update
 
-# Menerapkan migrasi hanya sampai pada file migrasi spesifik tertentu
-dotnet ef database update [NamaMigrasiSpesifik]
-
+# Apply migrations only up to a specific migration file
+dotnet ef database update [SpecificMigrationName]
 ```
 
-### Migrate DOWN (Rollback / Membatalkan Migrasi)
+### Migrate DOWN (Rollback / Revert Migrations)
 
-Di EF Core, membatalkan migrasi dilakukan dengan mengarahkan target *update* ke nama file migrasi masa lalu yang ingin dituju.
+In EF Core, rolling back a migration is done by updating the database to a previous migration target.
 
 ```bash
-# Mundur/rollback ke migrasi spesifik (menghapus tabel di atasnya)
-dotnet ef database update [NamaMigrasiSebelumnya]
+# Roll back to a specific migration (removes objects created after it)
+dotnet ef database update [PreviousMigrationName]
 
-# Reset total: rollback semua migrasi sampai database kosong bersih
+# Full reset: roll back all migrations and return the database to an empty state
 dotnet ef database update 0
-
 ```
 
-### Tambah & Hapus File Migrasi (C# Code Generation)
+### Add & Remove Migration Files (C# Code Generation)
 
 ```bash
-# Membuat file migrasi baru setelah mengubah model/configuration C#
-dotnet ef migrations add [NamaMigrasiBaru]
+# Generate a new migration file after modifying C# models/configuration
+dotnet ef migrations add [NewMigrationName]
 
-# Menghapus file migrasi TERAKHIR yang belum sempat di-apply ke database
+# Remove the most recent migration file that has not yet been applied to the database
 dotnet ef migrations remove
-
 ```
 
 ---
 
-## 2. Data Seeding Commands (Custom Script)
+## Data Seeding Commands (Custom Script)
 
-Gunakan perintah ini untuk memicu eksekusi pembuat data *mock* deterministik yang sudah kita pisah ke dalam script runner.
+Use these commands to execute the deterministic mock data generator that has been separated into a dedicated script runner.
 
 ```bash
-# Menjalankan manual seeding data (otomatis menjalankan migrasi terlebih dahulu jika ada)
+# Run manual data seeding (automatically applies pending migrations first)
 dotnet run -- --seed
 
-# Kombinasi: Reset total database fisik (Drop) + Migrate Up + Seed Data baru dalam 1 baris
+# Combined operation: Drop the physical database + Migrate Up + Seed fresh data in a single command
 dotnet ef database drop --force && dotnet run -- --seed
-
 ```
 
 ---
 
-## 3. Development Environment Commands
+## Development Environment Commands
 
 ### Dev Watch (Hot Reload)
 
-Mengecek perubahan kode C# secara langsung tanpa perlu melakukan restart aplikasi manual (*live-reloading*). Sangat berguna saat membuat API.
+Monitors C# code changes and reloads the application automatically without requiring a manual restart. This is especially useful during API development.
 
 ```bash
-# Menjalankan aplikasi dengan fitur hot-reload otomatis
+# Run the application with automatic hot reload
 dotnet watch run
 
-# Menjalankan dev watch dengan profil launchSettings tertentu (misal: https/http)
+# Run dev watch using a specific launchSettings profile (e.g., https/http)
 dotnet watch run --launch-profile "https"
-
 ```
 
 ---
 
-## 4. Build, Compile, & Maintenance Commands
+## Build, Compile, & Maintenance Commands
 
 ### Build & Compile
 
 ```bash
-# Melakukan kompilasi kode program untuk mengecek error sintaks/compiler
+# Compile the application to check for syntax and compiler errors
 dotnet build
 
-# Melakukan kompilasi bersih dengan menghapus cache build sebelumnya
+# Perform a clean build by ignoring previous build caches
 dotnet build --no-incremental
-
 ```
 
 ### Run (Normal Mode)
 
 ```bash
-# Menjalankan aplikasi web server secara normal (tanpa seeder & tanpa watch)
+# Run the web application normally (without seeding and without watch mode)
 dotnet run
-
 ```
 
 ### Clean & Restore Dependencies
 
 ```bash
-# Mengunduh ulang paket NuGet yang hilang atau belum terinstal
+# Restore missing or not-yet-installed NuGet packages
 dotnet restore
 
-# Menghapus folder otomatis bin/ dan obj/ hasil kompilasi terdahulu
+# Remove generated bin/ and obj/ directories from previous builds
 dotnet clean
-
 ```
----
+
+_Last Updated 24 Juny 2026_
