@@ -55,10 +55,13 @@ public static class FollowEndpoints
     {
       var followerId = Guid.Parse(httpContext.User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 
-      return Results.Json(ApiResponseWriter.Success(
-              await followService.CreateAsync(followerId, request, cancellationToken),
-              "Created"),
-              statusCode: StatusCodes.Status201Created);
+      return Results.Json(
+        ApiResponseWriter.Success(
+          await followService.CreateAsync(followerId, request, cancellationToken)
+          , "Created"
+        ),
+        statusCode: StatusCodes.Status201Created
+      );
     })
     .RequireAuthorization(Permissions.Authors.Follow)
     .WithName("FollowUser")

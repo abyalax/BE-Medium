@@ -11,7 +11,6 @@ public interface INatsPublisher
 
 public class NatsPublisher(IConnection connection, ILogger<NatsPublisher> logger) : INatsPublisher
 {
-
   public Task PublishAsync<T>(string subject, T @event) where T : class
   {
     try

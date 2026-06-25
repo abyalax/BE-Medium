@@ -3,17 +3,20 @@ using System.Text.Json;
 using Medium.Api.Domain.Article.Dtos;
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 using ArticleModel = Medium.Api.Models.Article;
 
 namespace Medium.Api.Domain.Article.Services;
 
-public class ArticleService(ArticleRepository articleRepository, ILogger<ArticleService> logger)
+public class ArticleService(ArticleRepository articleRepository, ILogger<ArticleService> logger, INatsPublisher publisher)
 {
   private const int MaxPageSize = 100;
   private readonly ArticleRepository _articleRepository = articleRepository;
 
   private readonly ILogger<ArticleService> _logger = logger;
+  private readonly INatsPublisher _publisher = publisher;
 
   private readonly string messageNotFound = "Article not found";
 
@@ -214,7 +217,7 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
       bool isAdmin,
       PublishArticleRequest request,
       CancellationToken cancellationToken = default
-  )
+)
   {
     var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
@@ -243,15 +246,26 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
 
       article.Status = Enums.ArticleStatus.Scheduled;
       article.ScheduledAt = request.ScheduledAt.Value;
+      await _articleRepository.SaveChangesAsync(cancellationToken);
     }
     else
     {
       article.Status = Enums.ArticleStatus.Published;
       article.PublishedAt = DateTime.UtcNow;
       article.ScheduledAt = null;
-    }
 
-    await _articleRepository.SaveChangesAsync(cancellationToken);
+      await _articleRepository.SaveChangesAsync(cancellationToken);
+
+      var @event = new ArticlePublishedEvent(
+          article.Id.ToString(),
+          article.Title,
+          article.AuthorId.ToString(),
+          article.PublishedAt.Value
+      );
+
+      await _publisher.PublishAsync(NatsSubjects.ArticlePublished, @event);
+      _logger.LogInformation("Published ArticlePublishedEvent for article {ArticleId}", article.Id);
+    }
 
     return await GetByIdAsync(article.Id, cancellationToken);
   }
@@ -261,7 +275,7 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
       Guid currentUserId,
       bool isAdmin,
       CancellationToken cancellationToken = default
-  )
+)
   {
 
     var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
@@ -287,7 +301,7 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
       Guid currentUserId,
       bool isAdmin,
       CancellationToken cancellationToken = default
-  )
+)
   {
     var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
@@ -313,7 +327,7 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
       Guid currentUserId,
       bool isAdmin,
       CancellationToken cancellationToken = default
-  )
+)
   {
     var article = await _articleRepository.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
@@ -340,7 +354,7 @@ public class ArticleService(ArticleRepository articleRepository, ILogger<Article
   private async Task<IReadOnlyCollection<Guid>> ResolveTagIdsAsync(
       IReadOnlyCollection<Guid>? tagIds,
       CancellationToken cancellationToken
-  )
+)
   {
     if (tagIds is null || tagIds.Count == 0)
     {

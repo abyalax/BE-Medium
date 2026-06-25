@@ -21,30 +21,23 @@ public class NatsSubscriber(IConnection connection, ILogger<NatsSubscriber> logg
     try
     {
       var sub = _connection.SubscribeAsync(subject);
-
-      // Background subscription handler
-      _ = Task.Run(() =>
+      sub.MessageHandler += async (sender, args) =>
       {
-        sub.MessageHandler += (sender, args) =>
-              {
-                try
-                {
-                  var json = System.Text.Encoding.UTF8.GetString(args.Message.Data);
-                  var @event = JsonSerializer.Deserialize<T>(json)
-                            ?? throw new InvalidOperationException($"Failed to deserialize {subject}");
+        try
+        {
+          var json = System.Text.Encoding.UTF8.GetString(args.Message.Data);
+          var @event = JsonSerializer.Deserialize<T>(json)
+                    ?? throw new InvalidOperationException($"Failed to deserialize {subject}");
+          await handler(@event);
+          _logger.LogInformation("Handled message from {Subject}", subject);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Error handling message from {Subject}", subject);
+        }
+      };
 
-                  Task.Run(() => handler(@event));
-                  _logger.LogInformation("Handled message from {Subject}", subject);
-                }
-                catch (Exception ex)
-                {
-                  _logger.LogError(ex, "Error handling message from {Subject}", subject);
-                }
-              };
-
-        sub.Start();
-      });
-
+      sub.Start();
       _logger.LogInformation("Subscribed to {Subject}", subject);
       return Task.CompletedTask;
     }

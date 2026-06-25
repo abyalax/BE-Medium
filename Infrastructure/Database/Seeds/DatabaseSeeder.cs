@@ -150,7 +150,7 @@ public static class DatabaseSeeder
       Guid roleId,
       HashSet<string> permissionCodes,
       CancellationToken cancellationToken
-  )
+)
   {
     var permissionIds = await context.Permissions
         .Where(permission => permissionCodes.Contains(permission.Code))
@@ -172,7 +172,7 @@ public static class DatabaseSeeder
   private static async Task SeedUsersAsync(
       ApplicationDbContext context,
       CancellationToken cancellationToken
-  )
+)
   {
     // Ambil langsung dari data yang sudah di-initialize di DatabaseMockData
     foreach (var user in DatabaseMockData.GeneratedUsers)

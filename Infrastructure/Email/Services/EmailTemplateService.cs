@@ -7,11 +7,9 @@ namespace Medium.Api.Infrastructure.Email.Services;
 public class EmailTemplateService
 {
   private readonly RazorLightEngine _engine;
-  private readonly EmailConfiguration _configuration;
 
   public EmailTemplateService(EmailConfiguration configuration)
   {
-    _configuration = configuration;
     var templateRoot = Path.Combine(Directory.GetCurrentDirectory(), "Infrastructure", "Email", "Templates");
     _engine = new RazorLightEngineBuilder()
         .UseFileSystemProject(templateRoot)

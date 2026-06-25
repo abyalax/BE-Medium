@@ -7,12 +7,16 @@ meta {
 post {
   url: {{URL_API}}/articles/77777777-7777-7777-7777-000000000001/publish
   body: json
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NDQ0NDQ0NC00NDQ0LTQ0NDQtNDQ0NC00NDQ0NDQ0NDQ0NDIiLCJlbWFpbCI6ImF1dGhvckBtZWRpdW0ubG9jYWwiLCJqdGkiOiJhOWY2N2M2Mi00NzA0LTRlYzEtOWU3Yi05YTdiMmU2YzY3ZmYiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBdXRob3IiLCJwZXJtaXNzaW9uIjpbImFydGljbGVzLmdldCIsImJvb2ttYXJrcy5jcmVhdGUiLCJhdXRob3JzLmZvbGxvdyIsImNvbW1lbnRzLmNyZWF0ZSIsImF1dGhvcnMuZ2V0X3Byb2ZpbGUiLCJyZWFkaW5nX2hpc3RvcnkuZ2V0IiwiYXJ0aWNsZXMuY3JlYXRlIiwiYXJ0aWNsZXMudXBkYXRlX293biIsImFydGljbGVzLnB1Ymxpc2giLCJhcnRpY2xlcy5hcmNoaXZlIiwiYXJ0aWNsZXMuZGVsZXRlX293biIsImFuYWx5dGljcy5nZXRfb3duIl0sImV4cCI6MTc4MjQyOTY4NywiaXNzIjoiTWVkaXVtLkFwaSIsImF1ZCI6Ik1lZGl1bS5BcGkifQ.jpP0K1A2MNueUXBIGsFdvpdwksGB4QutbbHqbkgv5aE
 }
 
 body:json {
   {
-    "scheduledAt": "2026-06-25T09:00:00Z"
+    "scheduledAt": null
   }
 }
 

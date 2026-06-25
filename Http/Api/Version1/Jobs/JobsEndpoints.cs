@@ -1,5 +1,7 @@
 using Coravel;
+
 using Medium.Api.Infrastructure.Scheduler.Jobs;
+
 using Microsoft.AspNetCore.Authorization;
 
 namespace Medium.Api.Http.Api.Version1.Jobs;

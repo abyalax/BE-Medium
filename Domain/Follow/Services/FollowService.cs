@@ -1,15 +1,18 @@
 using Medium.Api.Domain.Follow.Dtos;
 using Medium.Api.Domain.Follow.Repositories;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 using FollowModel = Medium.Api.Models.Follow;
 
 namespace Medium.Api.Domain.Follow.Services;
 
-public class FollowService(FollowRepository followRepository)
+public class FollowService(FollowRepository followRepository, INatsPublisher publisher)
 {
   private const int MaxPageSize = 100;
   private readonly FollowRepository _followRepository = followRepository;
+  private readonly INatsPublisher _publisher = publisher;
   private readonly string messageNotFound = "Follow relationship not found";
 
   public async Task<FollowResponse> CreateAsync(
@@ -36,6 +39,14 @@ public class FollowService(FollowRepository followRepository)
 
     await _followRepository.AddAsync(follow, cancellationToken);
     await _followRepository.SaveChangesAsync(cancellationToken);
+
+    var @event = new UserFollowedEvent(
+        follow.FollowerId.ToString(),
+        follow.FollowingId.ToString(),
+        follow.CreatedAt
+    );
+
+    await _publisher.PublishAsync(NatsSubjects.UserFollowed, @event);
 
     return await GetByIdAsync(follow.Id, cancellationToken);
   }

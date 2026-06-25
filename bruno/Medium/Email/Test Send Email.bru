@@ -1,0 +1,16 @@
+meta {
+  name: Test Send Email
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{URL_API}}/email/send
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

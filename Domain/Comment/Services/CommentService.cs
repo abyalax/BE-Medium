@@ -1,15 +1,18 @@
 using Medium.Api.Domain.Comment.Dtos;
 using Medium.Api.Domain.Comment.Repositories;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 using CommentModel = Medium.Api.Models.Comment;
 
 namespace Medium.Api.Domain.Comment.Services;
 
-public class CommentService(CommentRepository commentRepository)
+public class CommentService(CommentRepository commentRepository, INatsPublisher publisher)
 {
   private const int MaxPageSize = 100;
   private readonly CommentRepository _commentRepository = commentRepository;
+  private readonly INatsPublisher _publisher = publisher;
   private readonly string messageNotFound = "Comment not found";
 
   public async Task<CommentResponse> CreateAsync(
@@ -27,6 +30,16 @@ public class CommentService(CommentRepository commentRepository)
 
     await _commentRepository.AddAsync(comment, cancellationToken);
     await _commentRepository.SaveChangesAsync(cancellationToken);
+
+    var @event = new CommentCreatedEvent(
+        comment.Id.ToString(),
+        comment.ArticleId.ToString(),
+        comment.UserId.ToString(),
+        comment.Content,
+        comment.CreatedAt
+    );
+
+    await _publisher.PublishAsync(NatsSubjects.CommentCreated, @event);
 
     return await GetByIdAsync(comment.Id, cancellationToken);
   }

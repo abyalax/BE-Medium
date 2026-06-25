@@ -7,12 +7,16 @@ meta {
 post {
   url: {{URL_API}}/follows
   body: json
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTU1NTU1NS01NTU1LTU1NTUtNTU1NS0wMDAwMDAwMDAwMDEiLCJlbWFpbCI6InVzZXIwMDFAbWVkaXVtLmxvY2FsIiwianRpIjoiMzdhMDgyNjAtYTdmMi00ZTNlLTgzYWQtYTI2OTZhOTFhMTUyIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiUmVhZGVyIiwicGVybWlzc2lvbiI6WyJhcnRpY2xlcy5nZXQiLCJib29rbWFya3MuY3JlYXRlIiwiYXV0aG9ycy5mb2xsb3ciLCJjb21tZW50cy5jcmVhdGUiLCJhdXRob3JzLmdldF9wcm9maWxlIiwicmVhZGluZ19oaXN0b3J5LmdldCJdLCJleHAiOjE3ODI0MzAwMTIsImlzcyI6Ik1lZGl1bS5BcGkiLCJhdWQiOiJNZWRpdW0uQXBpIn0.g7N0ICZfyOwnhjqrk8Iyj6qvtMbxGES45CNTvNO_JRE
 }
 
 body:json {
   {
-    "followingId": "55555555-5555-5555-5555-000000000001"
+    "followingId": "44444444-4444-4444-4444-444444444442"
   }
 }
 

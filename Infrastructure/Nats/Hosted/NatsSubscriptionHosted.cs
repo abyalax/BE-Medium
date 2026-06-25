@@ -7,37 +7,37 @@ namespace Medium.Api.Infrastructure.Nats.Hosted;
 public class NatsSubscriptionHostedService(IServiceProvider serviceProvider) : IHostedService
 {
   private readonly IServiceProvider _serviceProvider = serviceProvider;
+  private IServiceScope? _scope;
 
-  public async Task StartAsync(
-      CancellationToken cancellationToken)
+  public async Task StartAsync(CancellationToken cancellationToken)
   {
-    using var scope = _serviceProvider.CreateScope();
+    _scope = _serviceProvider.CreateScope();
 
-    var subscriber = scope.ServiceProvider.GetRequiredService<INatsSubscriber>();
+    var subscriber = _scope.ServiceProvider.GetRequiredService<INatsSubscriber>();
 
-    var articleHandler = scope.ServiceProvider.GetRequiredService<IEventHandler<ArticlePublishedEvent>>();
-    var commentHandler = scope.ServiceProvider.GetRequiredService<IEventHandler<CommentCreatedEvent>>();
-    var followHandler = scope.ServiceProvider.GetRequiredService<IEventHandler<UserFollowedEvent>>();
+    var articleHandler = _scope.ServiceProvider.GetRequiredService<IEventHandler<ArticlePublishedEvent>>();
+    var commentHandler = _scope.ServiceProvider.GetRequiredService<IEventHandler<CommentCreatedEvent>>();
+    var followHandler = _scope.ServiceProvider.GetRequiredService<IEventHandler<UserFollowedEvent>>();
 
     await subscriber.SubscribeAsync<ArticlePublishedEvent>(
-            NatsSubjects.ArticlePublished,
-            articleHandler.HandleAsync
-        );
+        NatsSubjects.ArticlePublished,
+        articleHandler.HandleAsync
+    );
 
     await subscriber.SubscribeAsync<CommentCreatedEvent>(
-            NatsSubjects.CommentCreated,
-            commentHandler.HandleAsync
-        );
+        NatsSubjects.CommentCreated,
+        commentHandler.HandleAsync
+    );
 
     await subscriber.SubscribeAsync<UserFollowedEvent>(
-            NatsSubjects.UserFollowed,
-            followHandler.HandleAsync
-        );
+        NatsSubjects.UserFollowed,
+        followHandler.HandleAsync
+    );
   }
 
-  public Task StopAsync(
-      CancellationToken cancellationToken)
+  public Task StopAsync(CancellationToken cancellationToken)
   {
+    _scope?.Dispose();
     return Task.CompletedTask;
   }
 }

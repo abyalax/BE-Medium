@@ -16,7 +16,8 @@ public class CommentCreatedEventHandler(
     ArticleRepository articleRepository,
     UserRepository userRepository,
     MailpitEmailService emailService,
-    EmailTemplateService emailTemplateService) : IEventHandler<CommentCreatedEvent>
+    EmailTemplateService emailTemplateService
+  ) : IEventHandler<CommentCreatedEvent>
 {
   private readonly ILogger<CommentCreatedEventHandler> _logger = logger;
   private readonly NotificationService _notificationService = notificationService;

@@ -9,12 +9,10 @@ public static class EmailModule
   this IServiceCollection services,
   IConfiguration configuration)
   {
-    var emailConfiguration =
-        configuration
-            .GetSection("Email")
-            .Get<EmailConfiguration>()
-        ?? throw new InvalidOperationException(
-            "Email configuration is missing.");
+    var emailConfiguration = configuration
+      .GetSection("Email")
+      .Get<EmailConfiguration>()
+      ?? throw new InvalidOperationException("Email configuration is missing.");
 
     services.AddSingleton(emailConfiguration);
     services.AddSingleton<EmailTemplateService>();

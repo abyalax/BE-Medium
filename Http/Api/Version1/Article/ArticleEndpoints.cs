@@ -30,7 +30,7 @@ public static class ArticleEndpoints
         ArticleService articleService,
         CancellationToken cancellationToken) =>
     {
-      var articleStatus = status != null ? System.Enum.Parse<Enums.ArticleStatus>(status, true) : (Enums.ArticleStatus?)null;
+      var articleStatus = status != null ? Enum.Parse<Enums.ArticleStatus>(status, true) : (Enums.ArticleStatus?)null;
       var articles = await articleService.ListAsync(page, pageSize, authorId, tagSlug, searchTerm, articleStatus, sortBy, cancellationToken);
       return Results.Json(ApiResponseWriter.Success(articles));
     })
