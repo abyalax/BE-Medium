@@ -13,6 +13,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
   [
       typeof(User),
         typeof(Article),
+        typeof(Follow),
+        typeof(Notification),
         typeof(Comment),
         typeof(Tag)
   ];
@@ -94,26 +96,52 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
   {
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
     {
-      if (!typeof(Entity).IsAssignableFrom(entityType.ClrType))
+      // 1. Direct soft delete filter for registered entities
+      if (typeof(Entity).IsAssignableFrom(entityType.ClrType) &&
+          SoftDeleteEntityTypes.Contains(entityType.ClrType))
+      {
+        var parameter = Expression.Parameter(entityType.ClrType, "e");
+        var property = Expression.Property(parameter, nameof(Entity.DeletedAt));
+        var condition = Expression.Equal(property, Expression.Constant(null, typeof(DateTime?)));
+        var lambda = Expression.Lambda(condition, parameter);
+
+        modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         continue;
+      }
 
-      if (!SoftDeleteEntityTypes.Contains(entityType.ClrType))
-        continue;
+      // 2. Automated filter for child/dependent entities to resolve EF Core model validation warnings
+      // Check if this entity has a required foreign key pointing to a soft-deletable parent entity
+      var requiredForeignKeysWithSoftDelete = entityType.GetForeignKeys()
+          .Where(fk => fk.IsRequired && SoftDeleteEntityTypes.Contains(fk.PrincipalEntityType.ClrType));
 
-      var parameter = Expression.Parameter(entityType.ClrType, "e");
+      if (requiredForeignKeysWithSoftDelete.Any())
+      {
+        var parameter = Expression.Parameter(entityType.ClrType, "child");
+        Expression? finalExpression = null;
 
-      var property = Expression.Property(
-          parameter,
-          nameof(Entity.DeletedAt));
+        foreach (var fk in requiredForeignKeysWithSoftDelete)
+        {
+          // Fetch the navigation property name to the parent (e.g., Bookmark.Article)
+          var navigationName = fk.DependentToPrincipal?.Name;
+          if (string.IsNullOrEmpty(navigationName)) continue;
 
-      var condition = Expression.Equal(
-          property,
-          Expression.Constant(null, typeof(DateTime?)));
+          // Build the expression: child.Parent.DeletedAt == null
+          var navigationProperty = Expression.Property(parameter, navigationName);
+          var parentDeletedAtProperty = Expression.Property(navigationProperty, nameof(Entity.DeletedAt));
+          var isNotDeletedExpression = Expression.Equal(parentDeletedAtProperty, Expression.Constant(null, typeof(DateTime?)));
 
-      var lambda = Expression.Lambda(condition, parameter);
+          // Combine multiple parent conditions with AND if necessary
+          finalExpression = finalExpression == null
+              ? isNotDeletedExpression
+              : Expression.AndAlso(finalExpression, isNotDeletedExpression);
+        }
 
-      modelBuilder.Entity(entityType.ClrType)
-          .HasQueryFilter(lambda);
+        if (finalExpression != null)
+        {
+          var lambda = Expression.Lambda(finalExpression, parameter);
+          modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+        }
+      }
     }
   }
 

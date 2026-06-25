@@ -19,7 +19,8 @@ public class WeeklyAnalyticsJob(
     NotificationService notificationService,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
-    ILogger<WeeklyAnalyticsJob> logger) : IInvocable
+    ILogger<WeeklyAnalyticsJob> logger
+  ) : IInvocable
 {
   private readonly FollowRepository _followRepository = followRepository;
   private readonly ArticleRepository _articleRepository = articleRepository;
