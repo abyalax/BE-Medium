@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Medium.Api.Infrastructure.Database;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
   private static readonly HashSet<Type> SoftDeleteEntityTypes =
   [
@@ -16,11 +16,6 @@ public class ApplicationDbContext : DbContext
         typeof(Comment),
         typeof(Tag)
   ];
-
-  public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-      : base(options)
-  {
-  }
 
   // Core Entities
   public DbSet<User> Users => Set<User>();

@@ -7,14 +7,9 @@ using FollowModel = Medium.Api.Models.Follow;
 
 namespace Medium.Api.Domain.Follow.Repositories;
 
-public class FollowRepository
+public class FollowRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public FollowRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<FollowModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {

@@ -6,14 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Medium.Api.Infrastructure.Auth;
 
-public sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+public sealed class PermissionAuthorizationHandler(ILogger<PermissionAuthorizationHandler> logger) : AuthorizationHandler<PermissionRequirement>
 {
-  private readonly ILogger<PermissionAuthorizationHandler> _logger;
-
-  public PermissionAuthorizationHandler(ILogger<PermissionAuthorizationHandler> logger)
-  {
-    _logger = logger;
-  }
+  private readonly ILogger<PermissionAuthorizationHandler> _logger = logger;
 
   protected override Task HandleRequirementAsync(
       AuthorizationHandlerContext context,

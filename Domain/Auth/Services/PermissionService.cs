@@ -7,14 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Medium.Api.Domain.Auth.Services;
 
-public class PermissionService
+public class PermissionService(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public PermissionService(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<PermissionResponse> CreatePermissionAsync(string code, string name, string description, CancellationToken cancellationToken = default)
   {

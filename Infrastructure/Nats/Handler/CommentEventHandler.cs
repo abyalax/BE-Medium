@@ -10,30 +10,20 @@ using Medium.Api.Infrastructure.Nats.Events;
 
 namespace Medium.Api.Infrastructure.Nats.Handler;
 
-public class CommentCreatedEventHandler : IEventHandler<CommentCreatedEvent>
+public class CommentCreatedEventHandler(
+    ILogger<CommentCreatedEventHandler> logger,
+    NotificationService notificationService,
+    ArticleRepository articleRepository,
+    UserRepository userRepository,
+    MailpitEmailService emailService,
+    EmailTemplateService emailTemplateService) : IEventHandler<CommentCreatedEvent>
 {
-  private readonly ILogger<CommentCreatedEventHandler> _logger;
-  private readonly NotificationService _notificationService;
-  private readonly ArticleRepository _articleRepository;
-  private readonly UserRepository _userRepository;
-  private readonly MailpitEmailService _emailService;
-  private readonly EmailTemplateService _emailTemplateService;
-
-  public CommentCreatedEventHandler(
-      ILogger<CommentCreatedEventHandler> logger,
-      NotificationService notificationService,
-      ArticleRepository articleRepository,
-      UserRepository userRepository,
-      MailpitEmailService emailService,
-      EmailTemplateService emailTemplateService)
-  {
-    _logger = logger;
-    _notificationService = notificationService;
-    _articleRepository = articleRepository;
-    _userRepository = userRepository;
-    _emailService = emailService;
-    _emailTemplateService = emailTemplateService;
-  }
+  private readonly ILogger<CommentCreatedEventHandler> _logger = logger;
+  private readonly NotificationService _notificationService = notificationService;
+  private readonly ArticleRepository _articleRepository = articleRepository;
+  private readonly UserRepository _userRepository = userRepository;
+  private readonly MailpitEmailService _emailService = emailService;
+  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
   public async Task HandleAsync(CommentCreatedEvent @event)
   {

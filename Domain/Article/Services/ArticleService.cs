@@ -8,20 +8,14 @@ using ArticleModel = Medium.Api.Models.Article;
 
 namespace Medium.Api.Domain.Article.Services;
 
-public class ArticleService
+public class ArticleService(ArticleRepository articleRepository, ILogger<ArticleService> logger)
 {
   private const int MaxPageSize = 100;
-  private readonly ArticleRepository _articleRepository;
+  private readonly ArticleRepository _articleRepository = articleRepository;
 
-  private readonly ILogger<ArticleService> _logger;
+  private readonly ILogger<ArticleService> _logger = logger;
 
   private readonly string messageNotFound = "Article not found";
-
-  public ArticleService(ArticleRepository articleRepository, ILogger<ArticleService> logger)
-  {
-    _articleRepository = articleRepository;
-    _logger = logger;
-  }
 
   public async Task<ArticleResponse> CreateAsync(
       Guid authorId,

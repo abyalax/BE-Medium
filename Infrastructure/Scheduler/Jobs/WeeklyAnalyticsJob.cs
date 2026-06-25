@@ -11,36 +11,24 @@ using Medium.Api.Infrastructure.Email.Services;
 
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
-public class WeeklyAnalyticsJob : IInvocable
+public class WeeklyAnalyticsJob(
+    FollowRepository followRepository,
+    ArticleRepository articleRepository,
+    CommentRepository commentRepository,
+    UserRepository userRepository,
+    NotificationService notificationService,
+    MailpitEmailService emailService,
+    EmailTemplateService emailTemplateService,
+    ILogger<WeeklyAnalyticsJob> logger) : IInvocable
 {
-  private readonly FollowRepository _followRepository;
-  private readonly ArticleRepository _articleRepository;
-  private readonly CommentRepository _commentRepository;
-  private readonly UserRepository _userRepository;
-  private readonly NotificationService _notificationService;
-  private readonly MailpitEmailService _emailService;
-  private readonly EmailTemplateService _emailTemplateService;
-  private readonly ILogger<WeeklyAnalyticsJob> _logger;
-
-  public WeeklyAnalyticsJob(
-      FollowRepository followRepository,
-      ArticleRepository articleRepository,
-      CommentRepository commentRepository,
-      UserRepository userRepository,
-      NotificationService notificationService,
-      MailpitEmailService emailService,
-      EmailTemplateService emailTemplateService,
-      ILogger<WeeklyAnalyticsJob> logger)
-  {
-    _followRepository = followRepository;
-    _articleRepository = articleRepository;
-    _commentRepository = commentRepository;
-    _userRepository = userRepository;
-    _notificationService = notificationService;
-    _emailService = emailService;
-    _emailTemplateService = emailTemplateService;
-    _logger = logger;
-  }
+  private readonly FollowRepository _followRepository = followRepository;
+  private readonly ArticleRepository _articleRepository = articleRepository;
+  private readonly CommentRepository _commentRepository = commentRepository;
+  private readonly UserRepository _userRepository = userRepository;
+  private readonly NotificationService _notificationService = notificationService;
+  private readonly MailpitEmailService _emailService = emailService;
+  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
+  private readonly ILogger<WeeklyAnalyticsJob> _logger = logger;
 
   public async Task Invoke()
   {

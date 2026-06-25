@@ -6,20 +6,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Medium.Api.Infrastructure.Auth;
 
-public class JwtTokenGenerator : IJwtTokenGenerator
+public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerator
 {
-  private readonly string _secretKey;
-  private readonly string _issuer;
-  private readonly string _audience;
-  private readonly int _expiryMinutes;
-
-  public JwtTokenGenerator(IConfiguration configuration)
-  {
-    _secretKey = configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key");
-    _issuer = configuration["Jwt:Issuer"] ?? "Medium.Api";
-    _audience = configuration["Jwt:Audience"] ?? "Medium.Api";
-    _expiryMinutes = int.Parse(configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60");
-  }
+  private readonly string _secretKey = configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key");
+  private readonly string _issuer = configuration["Jwt:Issuer"] ?? "Medium.Api";
+  private readonly string _audience = configuration["Jwt:Audience"] ?? "Medium.Api";
+  private readonly int _expiryMinutes = int.Parse(configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60");
 
   public string GenerateToken(Guid userId, string email, IEnumerable<string> roles, IEnumerable<string> permissions)
   {

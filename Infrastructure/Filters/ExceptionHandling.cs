@@ -7,14 +7,9 @@ using Medium.Api.Infrastructure.Http;
 
 namespace Medium.Api.Infrastructure.Filters;
 
-public sealed class ExceptionHandling
+public sealed class ExceptionHandling(RequestDelegate next)
 {
-  private readonly RequestDelegate _next;
-
-  public ExceptionHandling(RequestDelegate next)
-  {
-    _next = next;
-  }
+  private readonly RequestDelegate _next = next;
 
   public async Task InvokeAsync(HttpContext context)
   {

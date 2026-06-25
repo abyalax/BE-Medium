@@ -7,27 +7,18 @@ using Medium.Api.Infrastructure.Nats.Events;
 
 namespace Medium.Api.Infrastructure.Nats.Handler;
 
-public class UserFollowedEventHandler : IEventHandler<UserFollowedEvent>
+public class UserFollowedEventHandler(
+    ILogger<UserFollowedEventHandler> logger,
+    NotificationService notificationService,
+    UserRepository userRepository,
+    MailpitEmailService emailService,
+    EmailTemplateService emailTemplateService) : IEventHandler<UserFollowedEvent>
 {
-  private readonly ILogger<UserFollowedEventHandler> _logger;
-  private readonly NotificationService _notificationService;
-  private readonly UserRepository _userRepository;
-  private readonly MailpitEmailService _emailService;
-  private readonly EmailTemplateService _emailTemplateService;
-
-  public UserFollowedEventHandler(
-      ILogger<UserFollowedEventHandler> logger,
-      NotificationService notificationService,
-      UserRepository userRepository,
-      MailpitEmailService emailService,
-      EmailTemplateService emailTemplateService)
-  {
-    _logger = logger;
-    _notificationService = notificationService;
-    _userRepository = userRepository;
-    _emailService = emailService;
-    _emailTemplateService = emailTemplateService;
-  }
+  private readonly ILogger<UserFollowedEventHandler> _logger = logger;
+  private readonly NotificationService _notificationService = notificationService;
+  private readonly UserRepository _userRepository = userRepository;
+  private readonly MailpitEmailService _emailService = emailService;
+  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
   public async Task HandleAsync(UserFollowedEvent @event)
   {

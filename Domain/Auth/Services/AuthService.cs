@@ -12,24 +12,16 @@ using UserRoleModel = Medium.Api.Models.UserRole;
 
 namespace Medium.Api.Domain.Auth.Services;
 
-public class AuthService
+public class AuthService(
+    ApplicationDbContext context,
+    IPasswordHasher passwordHasher,
+    IJwtTokenGenerator jwtTokenGenerator,
+    UserRepository userRepository)
 {
-  private readonly ApplicationDbContext _context;
-  private readonly IPasswordHasher _passwordHasher;
-  private readonly IJwtTokenGenerator _jwtTokenGenerator;
-  private readonly UserRepository _userRepository;
-
-  public AuthService(
-      ApplicationDbContext context,
-      IPasswordHasher passwordHasher,
-      IJwtTokenGenerator jwtTokenGenerator,
-      UserRepository userRepository)
-  {
-    _context = context;
-    _passwordHasher = passwordHasher;
-    _jwtTokenGenerator = jwtTokenGenerator;
-    _userRepository = userRepository;
-  }
+  private readonly ApplicationDbContext _context = context;
+  private readonly IPasswordHasher _passwordHasher = passwordHasher;
+  private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator;
+  private readonly UserRepository _userRepository = userRepository;
 
   public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
   {

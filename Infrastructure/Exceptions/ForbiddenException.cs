@@ -2,10 +2,6 @@ using System.Net;
 
 namespace Medium.Api.Infrastructure.Exceptions;
 
-public sealed class ForbiddenException : ApiException
+public sealed class ForbiddenException(string message) : ApiException(HttpStatusCode.NotFound, message)
 {
-  public ForbiddenException(string message)
-      : base(HttpStatusCode.NotFound, message)
-  {
-  }
 }

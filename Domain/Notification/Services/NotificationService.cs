@@ -5,14 +5,9 @@ using NotificationModel = Medium.Api.Models.Notification;
 
 namespace Medium.Api.Domain.Notification.Services;
 
-public class NotificationService
+public class NotificationService(NotificationRepository notificationRepository)
 {
-  private readonly NotificationRepository _notificationRepository;
-
-  public NotificationService(NotificationRepository notificationRepository)
-  {
-    _notificationRepository = notificationRepository;
-  }
+  private readonly NotificationRepository _notificationRepository = notificationRepository;
 
   public async Task<NotificationResponse> CreateAsync(CreateNotificationRequest request, CancellationToken cancellationToken = default)
   {

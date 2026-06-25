@@ -7,19 +7,13 @@ using UserModel = Medium.Api.Models.User;
 
 namespace Medium.Api.Domain.User.Services;
 
-public class UserService
+public class UserService(UserRepository userRepository, IPasswordHasher passwordHasher)
 {
   private const int MaxPageSize = 100;
-  private readonly UserRepository _userRepository;
-  private readonly IPasswordHasher _passwordHasher;
+  private readonly UserRepository _userRepository = userRepository;
+  private readonly IPasswordHasher _passwordHasher = passwordHasher;
 
   private readonly string messageNotFound = "User not found";
-
-  public UserService(UserRepository userRepository, IPasswordHasher passwordHasher)
-  {
-    _userRepository = userRepository;
-    _passwordHasher = passwordHasher;
-  }
 
   public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
   {

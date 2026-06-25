@@ -6,16 +6,11 @@ using BookmarkModel = Medium.Api.Models.Bookmark;
 
 namespace Medium.Api.Domain.Bookmark.Services;
 
-public class BookmarkService
+public class BookmarkService(BookmarkRepository bookmarkRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly BookmarkRepository _bookmarkRepository;
+  private readonly BookmarkRepository _bookmarkRepository = bookmarkRepository;
   private readonly string messageNotFound = "Bookmark not found";
-
-  public BookmarkService(BookmarkRepository bookmarkRepository)
-  {
-    _bookmarkRepository = bookmarkRepository;
-  }
 
   public async Task<BookmarkResponse> CreateAsync(
       Guid userId,

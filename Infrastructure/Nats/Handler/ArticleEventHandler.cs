@@ -12,27 +12,18 @@ public interface IEventHandler<in T> where T : class
   Task HandleAsync(T @event);
 }
 
-public class ArticlePublishedEventHandler : IEventHandler<ArticlePublishedEvent>
+public class ArticlePublishedEventHandler(
+    ILogger<ArticlePublishedEventHandler> logger,
+    NotificationService notificationService,
+    FollowRepository followRepository,
+    MailpitEmailService emailService,
+    EmailTemplateService emailTemplateService) : IEventHandler<ArticlePublishedEvent>
 {
-  private readonly ILogger<ArticlePublishedEventHandler> _logger;
-  private readonly NotificationService _notificationService;
-  private readonly FollowRepository _followRepository;
-  private readonly MailpitEmailService _emailService;
-  private readonly EmailTemplateService _emailTemplateService;
-
-  public ArticlePublishedEventHandler(
-      ILogger<ArticlePublishedEventHandler> logger,
-      NotificationService notificationService,
-      FollowRepository followRepository,
-      MailpitEmailService emailService,
-      EmailTemplateService emailTemplateService)
-  {
-    _logger = logger;
-    _notificationService = notificationService;
-    _followRepository = followRepository;
-    _emailService = emailService;
-    _emailTemplateService = emailTemplateService;
-  }
+  private readonly ILogger<ArticlePublishedEventHandler> _logger = logger;
+  private readonly NotificationService _notificationService = notificationService;
+  private readonly FollowRepository _followRepository = followRepository;
+  private readonly MailpitEmailService _emailService = emailService;
+  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
   public async Task HandleAsync(ArticlePublishedEvent @event)
   {

@@ -6,14 +6,9 @@ using ArticleModel = Medium.Api.Models.Article;
 
 namespace Medium.Api.Domain.Analytics.Repositories;
 
-public class AnalyticsRepository
+public class AnalyticsRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public AnalyticsRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<int> GetTotalUsersAsync(CancellationToken cancellationToken = default)
   {

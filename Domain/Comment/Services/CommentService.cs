@@ -6,16 +6,11 @@ using CommentModel = Medium.Api.Models.Comment;
 
 namespace Medium.Api.Domain.Comment.Services;
 
-public class CommentService
+public class CommentService(CommentRepository commentRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly CommentRepository _commentRepository;
+  private readonly CommentRepository _commentRepository = commentRepository;
   private readonly string messageNotFound = "Comment not found";
-
-  public CommentService(CommentRepository commentRepository)
-  {
-    _commentRepository = commentRepository;
-  }
 
   public async Task<CommentResponse> CreateAsync(
       Guid userId,

@@ -10,36 +10,24 @@ using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
-public class NewsletterQueueJob : IInvocable
+public class NewsletterQueueJob(
+    CommentRepository commentRepository,
+    ArticleRepository articleRepository,
+    FollowRepository followRepository,
+    UserRepository userRepository,
+    INatsPublisher publisher,
+    MailpitEmailService emailService,
+    EmailTemplateService emailTemplateService,
+    ILogger<NewsletterQueueJob> logger) : IInvocable
 {
-  private readonly CommentRepository _commentRepository;
-  private readonly ArticleRepository _articleRepository;
-  private readonly FollowRepository _followRepository;
-  private readonly UserRepository _userRepository;
-  private readonly INatsPublisher _publisher;
-  private readonly MailpitEmailService _emailService;
-  private readonly EmailTemplateService _emailTemplateService;
-  private readonly ILogger<NewsletterQueueJob> _logger;
-
-  public NewsletterQueueJob(
-      CommentRepository commentRepository,
-      ArticleRepository articleRepository,
-      FollowRepository followRepository,
-      UserRepository userRepository,
-      INatsPublisher publisher,
-      MailpitEmailService emailService,
-      EmailTemplateService emailTemplateService,
-      ILogger<NewsletterQueueJob> logger)
-  {
-    _commentRepository = commentRepository;
-    _articleRepository = articleRepository;
-    _followRepository = followRepository;
-    _userRepository = userRepository;
-    _publisher = publisher;
-    _emailService = emailService;
-    _emailTemplateService = emailTemplateService;
-    _logger = logger;
-  }
+  private readonly CommentRepository _commentRepository = commentRepository;
+  private readonly ArticleRepository _articleRepository = articleRepository;
+  private readonly FollowRepository _followRepository = followRepository;
+  private readonly UserRepository _userRepository = userRepository;
+  private readonly INatsPublisher _publisher = publisher;
+  private readonly MailpitEmailService _emailService = emailService;
+  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
+  private readonly ILogger<NewsletterQueueJob> _logger = logger;
 
   public async Task Invoke()
   {
@@ -70,7 +58,7 @@ public class NewsletterQueueJob : IInvocable
         ));
       }
 
-      // Get all users for newsletter (in real app, would only get subscribers)
+      // Get all users for newsletter (TODO: would only get subscribers)
       var users = await _userRepository.ListAsync(1, 100, default);
 
       foreach (var user in users)
@@ -83,7 +71,7 @@ public class NewsletterQueueJob : IInvocable
             newCommentsCount,
             newFollowersCount,
             topArticleItems,
-            "https://medium-clone.com"
+            "https://medium-clone.com" // TODO: change to real url apps
         );
 
         var emailHtml = await _emailTemplateService.RenderTemplateAsync("NewsletterEmail", emailModel);

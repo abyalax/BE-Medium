@@ -8,24 +8,16 @@ using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
-public class PublishScheduledJob : IInvocable
+public class PublishScheduledJob(
+    ArticleRepository articleRepository,
+    ArticleService articleService,
+    INatsPublisher publisher,
+    ILogger<PublishScheduledJob> logger) : IInvocable
 {
-  private readonly ArticleRepository _articleRepository;
-  private readonly ArticleService _articleService;
-  private readonly INatsPublisher _publisher;
-  private readonly ILogger<PublishScheduledJob> _logger;
-
-  public PublishScheduledJob(
-      ArticleRepository articleRepository,
-      ArticleService articleService,
-      INatsPublisher publisher,
-      ILogger<PublishScheduledJob> logger)
-  {
-    _articleRepository = articleRepository;
-    _articleService = articleService;
-    _publisher = publisher;
-    _logger = logger;
-  }
+  private readonly ArticleRepository _articleRepository = articleRepository;
+  private readonly ArticleService _articleService = articleService;
+  private readonly INatsPublisher _publisher = publisher;
+  private readonly ILogger<PublishScheduledJob> _logger = logger;
 
   public async Task Invoke()
   {

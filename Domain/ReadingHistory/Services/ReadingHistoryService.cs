@@ -6,16 +6,11 @@ using ReadingHistoryModel = Medium.Api.Models.ReadingHistory;
 
 namespace Medium.Api.Domain.ReadingHistory.Services;
 
-public class ReadingHistoryService
+public class ReadingHistoryService(ReadingHistoryRepository readingHistoryRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly ReadingHistoryRepository _readingHistoryRepository;
+  private readonly ReadingHistoryRepository _readingHistoryRepository = readingHistoryRepository;
   private readonly string messageNotFound = "Reading history not found";
-
-  public ReadingHistoryService(ReadingHistoryRepository readingHistoryRepository)
-  {
-    _readingHistoryRepository = readingHistoryRepository;
-  }
 
   public async Task<ReadingHistoryResponse> CreateAsync(
       Guid userId,

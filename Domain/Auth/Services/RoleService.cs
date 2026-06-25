@@ -7,14 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Medium.Api.Domain.Auth.Services;
 
-public class RoleService
+public class RoleService(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public RoleService(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<RoleResponse> CreateRoleAsync(string name, string description, CancellationToken cancellationToken = default)
   {

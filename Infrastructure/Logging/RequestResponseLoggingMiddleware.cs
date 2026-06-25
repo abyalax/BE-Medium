@@ -6,17 +6,11 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Medium.Api.Infrastructure.Logging;
 
-public sealed class RequestResponseLoggingMiddleware
+public sealed class RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<RequestResponseLoggingMiddleware> logger)
 {
   private const int MaxLoggedBodyLength = 4096;
-  private readonly RequestDelegate _next;
-  private readonly ILogger<RequestResponseLoggingMiddleware> _logger;
-
-  public RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<RequestResponseLoggingMiddleware> logger)
-  {
-    _next = next;
-    _logger = logger;
-  }
+  private readonly RequestDelegate _next = next;
+  private readonly ILogger<RequestResponseLoggingMiddleware> _logger = logger;
 
   public async Task InvokeAsync(HttpContext context)
   {

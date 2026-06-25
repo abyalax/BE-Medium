@@ -7,14 +7,9 @@ using ReadingHistoryModel = Medium.Api.Models.ReadingHistory;
 
 namespace Medium.Api.Domain.ReadingHistory.Repositories;
 
-public class ReadingHistoryRepository
+public class ReadingHistoryRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public ReadingHistoryRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<ReadingHistoryModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {

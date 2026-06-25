@@ -7,14 +7,9 @@ using CommentModel = Medium.Api.Models.Comment;
 
 namespace Medium.Api.Domain.Comment.Repositories;
 
-public class CommentRepository
+public class CommentRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public CommentRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<CommentModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {

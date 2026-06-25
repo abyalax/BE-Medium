@@ -2,10 +2,6 @@ using System.Net;
 
 namespace Medium.Api.Infrastructure.Exceptions;
 
-public sealed class NotFoundException : ApiException
+public sealed class NotFoundException(string message) : ApiException(HttpStatusCode.NotFound, message)
 {
-  public NotFoundException(string message)
-      : base(HttpStatusCode.NotFound, message)
-  {
-  }
 }

@@ -6,16 +6,11 @@ using FollowModel = Medium.Api.Models.Follow;
 
 namespace Medium.Api.Domain.Follow.Services;
 
-public class FollowService
+public class FollowService(FollowRepository followRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly FollowRepository _followRepository;
+  private readonly FollowRepository _followRepository = followRepository;
   private readonly string messageNotFound = "Follow relationship not found";
-
-  public FollowService(FollowRepository followRepository)
-  {
-    _followRepository = followRepository;
-  }
 
   public async Task<FollowResponse> CreateAsync(
       Guid followerId,

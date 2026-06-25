@@ -6,16 +6,11 @@ using TagModel = Medium.Api.Models.Tag;
 
 namespace Medium.Api.Domain.Tag.Services;
 
-public class TagService
+public class TagService(TagRepository tagRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly TagRepository _tagRepository;
+  private readonly TagRepository _tagRepository = tagRepository;
   private readonly string messageNotFound = "Tag not found";
-
-  public TagService(TagRepository tagRepository)
-  {
-    _tagRepository = tagRepository;
-  }
 
   public async Task<TagResponse> CreateAsync(CreateTagRequest request, CancellationToken cancellationToken = default)
   {

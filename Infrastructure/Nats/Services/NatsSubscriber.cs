@@ -11,16 +11,10 @@ public interface INatsSubscriber
   Task SubscribeAsync<T>(string subject, Func<T, Task> handler) where T : class;
 }
 
-public class NatsSubscriber : INatsSubscriber
+public class NatsSubscriber(IConnection connection, ILogger<NatsSubscriber> logger) : INatsSubscriber
 {
-  private readonly IConnection _connection;
-  private readonly ILogger<NatsSubscriber> _logger;
-
-  public NatsSubscriber(IConnection connection, ILogger<NatsSubscriber> logger)
-  {
-    _connection = connection;
-    _logger = logger;
-  }
+  private readonly IConnection _connection = connection;
+  private readonly ILogger<NatsSubscriber> _logger = logger;
 
   public Task SubscribeAsync<T>(string subject, Func<T, Task> handler) where T : class
   {

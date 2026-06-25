@@ -6,14 +6,9 @@ using TagModel = Medium.Api.Models.Tag;
 
 namespace Medium.Api.Domain.Tag.Repositories;
 
-public class TagRepository
+public class TagRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public TagRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<TagModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {

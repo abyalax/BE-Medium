@@ -7,14 +7,9 @@ using BookmarkModel = Medium.Api.Models.Bookmark;
 
 namespace Medium.Api.Domain.Bookmark.Repositories;
 
-public class BookmarkRepository
+public class BookmarkRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public BookmarkRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task<BookmarkModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {

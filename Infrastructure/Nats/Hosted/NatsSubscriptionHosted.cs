@@ -4,14 +4,9 @@ using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Infrastructure.Nats.Hosted;
 
-public class NatsSubscriptionHostedService : IHostedService
+public class NatsSubscriptionHostedService(IServiceProvider serviceProvider) : IHostedService
 {
-  private readonly IServiceProvider _serviceProvider;
-
-  public NatsSubscriptionHostedService(IServiceProvider serviceProvider)
-  {
-    _serviceProvider = serviceProvider;
-  }
+  private readonly IServiceProvider _serviceProvider = serviceProvider;
 
   public async Task StartAsync(
       CancellationToken cancellationToken)

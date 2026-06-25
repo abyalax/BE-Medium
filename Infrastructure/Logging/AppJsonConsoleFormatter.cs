@@ -12,16 +12,10 @@ using Microsoft.Extensions.Options;
 
 namespace Medium.Api.Infrastructure.Logging;
 
-public sealed class AppJsonConsoleFormatter : ConsoleFormatter
+public sealed class AppJsonConsoleFormatter(IOptionsMonitor<ConsoleFormatterOptions> options) : ConsoleFormatter(FormatterName)
 {
   public const string FormatterName = "app-json";
-  private readonly IOptionsMonitor<ConsoleFormatterOptions> _options;
-
-  public AppJsonConsoleFormatter(IOptionsMonitor<ConsoleFormatterOptions> options)
-      : base(FormatterName)
-  {
-    _options = options ?? throw new ArgumentNullException(nameof(options));
-  }
+  private readonly IOptionsMonitor<ConsoleFormatterOptions> _options = options ?? throw new ArgumentNullException(nameof(options));
 
   public override void Write<TState>(in LogEntry<TState> logEntry, IExternalScopeProvider? scopeProvider, TextWriter textWriter)
   {

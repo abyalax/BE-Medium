@@ -10,14 +10,9 @@ using UserRoleModel = Medium.Api.Models.UserRole;
 
 namespace Medium.Api.Domain.User.Repositories;
 
-public class UserRepository
+public class UserRepository(ApplicationDbContext context)
 {
-  private readonly ApplicationDbContext _context;
-
-  public UserRepository(ApplicationDbContext context)
-  {
-    _context = context;
-  }
+  private readonly ApplicationDbContext _context = context;
 
   public async Task AddAsync(UserModel user, CancellationToken cancellationToken = default)
   {
