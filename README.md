@@ -5,7 +5,7 @@
 Before getting started, make sure the following tools are installed on your machine:
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or a newer version.
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or use docker on wsl.
 
 ## Entity Framework Core (Database Schema Management)
 
