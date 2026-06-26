@@ -98,9 +98,11 @@ services:
       mc mb minio/avatars || true;
       mc mb minio/article-covers || true;
       mc mb minio/documents || true;
+      mc mb minio/medium-storage || true;
 
       mc anonymous set public minio/avatars || true;
       mc anonymous set public minio/article-covers || true;
+      mc anonymous set public minio/medium-storage || true;
 
       echo 'Buckets initialized successfully';
       "
