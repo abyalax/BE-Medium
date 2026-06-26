@@ -8,6 +8,7 @@ using Medium.Api.Http.Api.Version1.Jobs;
 using Medium.Api.Http.Api.Version1.ReadingHistory;
 using Medium.Api.Http.Api.Version1.Tag;
 using Medium.Api.Http.Api.Version1.Users;
+using Medium.Api.Http.Api.Version1.Minio;
 using Medium.Api.Infrastructure;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Database;
@@ -79,6 +80,7 @@ public class Program
     app.MapReadingHistoryEndpoints();
     app.MapJobsEndpoints();
     app.MapEmailEndpoints();
+    app.MapMinioEndpoints();
 
     app.Run();
   }
