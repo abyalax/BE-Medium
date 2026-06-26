@@ -143,7 +143,7 @@ public class FollowService(FollowRepository followRepository, INatsPublisher pub
         follow.CreatedAt);
   }
 
-  private static FollowResponse ToResponse(Models.Follow follow)
+  private static FollowResponse ToResponse(FollowModel follow)
   {
     return new FollowResponse(
         follow.Id,

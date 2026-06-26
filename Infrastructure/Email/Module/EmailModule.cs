@@ -5,9 +5,7 @@ namespace Medium.Api.Infrastructure.Email.Module;
 
 public static class EmailModule
 {
-  public static IServiceCollection AddEmailInfrastructure(
-  this IServiceCollection services,
-  IConfiguration configuration)
+  public static IServiceCollection AddEmailInfrastructure(this IServiceCollection services, IConfiguration configuration)
   {
     var emailConfiguration = configuration
       .GetSection("Email")

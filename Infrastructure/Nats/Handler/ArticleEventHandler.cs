@@ -31,34 +31,56 @@ public class ArticlePublishedEventHandler(
     {
       _logger.LogInformation("Handling ArticlePublished: {ArticleId}", @event.ArticleId);
 
-      // Send notification to followers via email
-      var followers = await _followRepository.GetFollowersAsync(
-          Guid.Parse(@event.AuthorId), 1, 100, default);
-
-      foreach (var follow in followers)
+      // Fetch followers (Consider removing pagination if you need to notify ALL followers)
+      var followers = await _followRepository.GetFollowersAsync(Guid.Parse(@event.AuthorId), 1, 100, default);
+      if (followers == null || !followers.Any())
       {
-        // Create notification
-        await _notificationService.CreateAsync(new CreateNotificationRequest(
-            follow.FollowerId.ToString(),
-            $"New Article Published",
-            $"{@event.Title} has been published by an author you follow",
-            NotificationType.ArticlePublished,
-            @event.ArticleId,
-            $"/articles/{@event.ArticleId}"
-        ), default);
-
-        // Send email notification using RazorLight template
-        var emailModel = new ArticlePublishedEmailModel(
-            follow.Follower.Name,
-            follow.Following.Name,
-            @event.Title,
-            @event.Title.Length > 150 ? string.Concat(@event.Title.AsSpan(0, 150), "...") : @event.Title,
-            $"/articles/{@event.ArticleId}"
-        );
-
-        var emailHtml = await _emailTemplateService.RenderTemplateAsync("ArticlePublishedEmail", emailModel);
-        await _emailService.SendAsync(follow.Follower.Email, "New Article Published", emailHtml, default);
+        _logger.LogInformation("No followers found for Author: {AuthorId}", @event.AuthorId);
+        return;
       }
+
+      var summary = @event.Title.Length > 150
+          ? string.Concat(@event.Title.AsSpan(0, 150), "...")
+          : @event.Title;
+      var articleUrl = $"/articles/{@event.ArticleId}";
+
+      // 1. Batch Create Notifications (Fix N+1 Query)
+      var notificationRequests = followers.Select(follow => new CreateNotificationRequest(
+          follow.FollowerId.ToString(),
+          "New Article Published",
+          $"{@event.Title} has been published by an author you follow",
+          NotificationType.ArticlePublished,
+          @event.ArticleId,
+          articleUrl
+      )).ToList();
+
+      // NOTE: Ensure your NotificationService supports batch insertion (e.g., CreateRangeAsync)
+      await _notificationService.CreateRangeAsync(notificationRequests, default);
+
+      // 2. Optimize Email Sending (Parallel Execution using Task.WhenAll)
+      var emailTasks = followers.Select(async follow =>
+      {
+        try
+        {
+          var emailModel = new ArticlePublishedEmailModel(
+                    follow.Follower.Name,
+                    follow.Following.Name,
+                    @event.Title,
+                    summary,
+                    articleUrl
+                );
+
+          var emailHtml = await _emailTemplateService.RenderTemplateAsync("ArticlePublishedEmail", emailModel);
+          await _emailService.SendAsync(follow.Follower.Email, "New Article Published", emailHtml, default);
+        }
+        catch (Exception ex)
+        {
+          // Log individual email failure so it doesn't break the entire batch execution
+          _logger.LogError(ex, "Failed to send email notification to follower: {FollowerId}", follow.FollowerId);
+        }
+      });
+
+      await Task.WhenAll(emailTasks);
 
       _logger.LogInformation("ArticlePublished event processed for {ArticleId}. Notified {Count} followers.",
           @event.ArticleId, followers.Count);

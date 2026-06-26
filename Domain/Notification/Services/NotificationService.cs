@@ -17,7 +17,7 @@ public class NotificationService(NotificationRepository notificationRepository)
       UserId = Guid.Parse(request.UserId),
       Title = request.Title,
       Message = request.Message,
-      Type = (Medium.Api.Enums.NotificationType)request.Type,
+      Type = (Enums.NotificationType)request.Type,
       ReferenceId = request.RelatedEntityId != null ? Guid.Parse(request.RelatedEntityId) : null,
       IsRead = false,
       CreatedAt = DateTime.UtcNow
@@ -37,6 +37,49 @@ public class NotificationService(NotificationRepository notificationRepository)
         notification.IsRead,
 notification.CreatedAt
     );
+  }
+
+  public async Task<IEnumerable<NotificationResponse>> CreateRangeAsync(
+    IEnumerable<CreateNotificationRequest> requests,
+    CancellationToken cancellationToken = default)
+  {
+    if (requests == null || !requests.Any())
+    {
+      return Enumerable.Empty<NotificationResponse>();
+    }
+
+    var utcNow = DateTime.UtcNow;
+
+    // 1. Map all requests to models at once
+    var notifications = requests.Select(request => new NotificationModel
+    {
+      Id = Guid.NewGuid(),
+      UserId = Guid.Parse(request.UserId),
+      Title = request.Title,
+      Message = request.Message,
+      Type = (Enums.NotificationType)request.Type,
+      ReferenceId = request.RelatedEntityId != null ? Guid.Parse(request.RelatedEntityId) : null,
+      IsRead = false,
+      CreatedAt = utcNow
+    }).ToList();
+
+    // 2. Bulk insert into repository (Only 1 database roundtrip for local operations)
+    await _notificationRepository.AddRangeAsync(notifications, cancellationToken);
+    await _notificationRepository.SaveChangesAsync(cancellationToken);
+
+    // 3. Project the saved models back to responses
+    return notifications.Select(notification => new NotificationResponse(
+        notification.Id.ToString(),
+        notification.UserId.ToString(),
+        notification.Title,
+        notification.Message,
+        (NotificationType)notification.Type,
+        notification.ReferenceId?.ToString(),
+        // Since ActionUrl might not be stored in the DB model, we pair it from the input or leave it if handled elsewhere
+        requests.FirstOrDefault(r => r.UserId == notification.UserId.ToString())?.ActionUrl,
+        notification.IsRead,
+        notification.CreatedAt
+    )).ToList();
   }
 
   public async Task MarkAsReadAsync(string notificationId, CancellationToken cancellationToken = default)

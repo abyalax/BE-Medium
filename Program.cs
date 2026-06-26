@@ -27,16 +27,16 @@ public class Program
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
-            sqlOptions =>
-            {
-              sqlOptions.EnableRetryOnFailure(
-                      maxRetryCount: 5,
-                      maxRetryDelay: TimeSpan.FromSeconds(30),
-                      errorNumbersToAdd: null);
-            })
-        .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
+      options.UseSqlServer(
+          builder.Configuration.GetConnectionString("DefaultConnection"),
+          sqlOptions =>
+          {
+            sqlOptions.EnableRetryOnFailure(
+              maxRetryCount: 5,
+              maxRetryDelay: TimeSpan.FromSeconds(30),
+              errorNumbersToAdd: null);
+          })
+          .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
 
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddModule();

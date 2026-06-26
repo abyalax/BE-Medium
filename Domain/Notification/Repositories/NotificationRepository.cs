@@ -15,6 +15,11 @@ public class NotificationRepository(ApplicationDbContext context)
     await _context.Notification.AddAsync(notification, cancellationToken);
   }
 
+  public async Task AddRangeAsync(IEnumerable<NotificationModel> entities, CancellationToken cancellationToken = default)
+  {
+    await _context.Notification.AddRangeAsync(entities, cancellationToken);
+  }
+
   public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
   {
     await _context.SaveChangesAsync(cancellationToken);

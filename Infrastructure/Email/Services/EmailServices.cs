@@ -9,53 +9,45 @@ using MimeKit;
 
 public sealed class MailpitEmailService(EmailConfiguration configuration)
 {
-    private readonly EmailConfiguration _configuration = configuration;
+  private readonly EmailConfiguration _configuration = configuration;
 
-    public async Task SendAsync(
-        string to,
-        string subject,
-        string html,
-        CancellationToken cancellationToken = default)
+  public async Task SendAsync(
+    string to,
+    string subject,
+    string html,
+    CancellationToken cancellationToken = default)
+  {
+    var email = new MimeMessage();
+
+    email.From.Add(
+      new MailboxAddress(_configuration.FromName, _configuration.FromEmail)
+    );
+
+    email.To.Add(MailboxAddress.Parse(to));
+    email.Subject = subject;
+    email.Body = new TextPart("html")
     {
-        var email = new MimeMessage();
+      Text = html
+    };
 
-        email.From.Add(
-            new MailboxAddress(
-                _configuration.FromName,
-                _configuration.FromEmail));
+    using var smtp = new SmtpClient();
 
-        email.To.Add(
-            MailboxAddress.Parse(to));
+    await smtp.ConnectAsync(
+        _configuration.Host,
+        _configuration.Port,
+        SecureSocketOptions.None,
+        cancellationToken);
 
-        email.Subject = subject;
-
-        email.Body = new TextPart("html")
-        {
-            Text = html
-        };
-
-        using var smtp = new SmtpClient();
-
-        await smtp.ConnectAsync(
-            _configuration.Host,
-            _configuration.Port,
-            SecureSocketOptions.None,
-            cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(_configuration.Username))
-        {
-            await smtp.AuthenticateAsync(
-                _configuration.Username,
-                _configuration.Password,
-                cancellationToken);
-        }
-
-        await smtp.SendAsync(
-            email,
-            cancellationToken);
-
-        await smtp.DisconnectAsync(
-            true,
-            cancellationToken);
+    if (!string.IsNullOrWhiteSpace(_configuration.Username))
+    {
+      await smtp.AuthenticateAsync(
+        _configuration.Username,
+        _configuration.Password,
+        cancellationToken
+      );
     }
+
+    await smtp.SendAsync(email, cancellationToken);
+    await smtp.DisconnectAsync(true, cancellationToken);
+  }
 }
