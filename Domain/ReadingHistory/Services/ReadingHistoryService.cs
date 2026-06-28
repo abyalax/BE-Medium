@@ -1,3 +1,4 @@
+// TODO: remove this layer service and migrate it to CQRS Pattern
 using Medium.Api.Domain.ReadingHistory.Dtos;
 using Medium.Api.Domain.ReadingHistory.Repositories;
 using Medium.Api.Infrastructure.Exceptions;
@@ -6,10 +7,11 @@ using ReadingHistoryModel = Medium.Api.Models.ReadingHistory;
 
 namespace Medium.Api.Domain.ReadingHistory.Services;
 
-public class ReadingHistoryService(ReadingHistoryRepository readingHistoryRepository)
+public class ReadingHistoryService(ReadingHistoryStoreRepository readingHistoryStoreRepository, ReadingHistoryQueryRepository readingHistoryQueryRepository)
 {
   private const int MaxPageSize = 100;
-  private readonly ReadingHistoryRepository _readingHistoryRepository = readingHistoryRepository;
+  private readonly ReadingHistoryStoreRepository _readingHistoryStoreRepository = readingHistoryStoreRepository;
+  private readonly ReadingHistoryQueryRepository _readingHistoryQueryRepository = readingHistoryQueryRepository;
   private readonly string messageNotFound = "Reading history not found";
 
   public async Task<ReadingHistoryResponse> CreateAsync(
@@ -26,15 +28,15 @@ public class ReadingHistoryService(ReadingHistoryRepository readingHistoryReposi
       ReadAt = DateTime.UtcNow
     };
 
-    await _readingHistoryRepository.AddAsync(readingHistory, cancellationToken);
-    await _readingHistoryRepository.SaveChangesAsync(cancellationToken);
+    await _readingHistoryStoreRepository.AddAsync(readingHistory, cancellationToken);
+    await _readingHistoryStoreRepository.SaveChangesAsync(cancellationToken);
 
     return await GetByIdAsync(readingHistory.Id, cancellationToken);
   }
 
   public async Task<ReadingHistoryResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {
-    var history = await _readingHistoryRepository.GetReadingHistoryWithArticleAsync(id, cancellationToken)
+    var history = await _readingHistoryQueryRepository.GetReadingHistoryWithArticleAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
 
     return ToResponse(history);
@@ -49,8 +51,8 @@ public class ReadingHistoryService(ReadingHistoryRepository readingHistoryReposi
     page = page < 1 ? 1 : page;
     pageSize = pageSize < 1 ? 10 : Math.Min(pageSize, MaxPageSize);
 
-    var totalItems = await _readingHistoryRepository.CountByUserAsync(userId, cancellationToken);
-    var items = await _readingHistoryRepository.GetByUserAsync(userId, page, pageSize, cancellationToken);
+    var totalItems = await _readingHistoryQueryRepository.CountByUserAsync(userId, cancellationToken);
+    var items = await _readingHistoryQueryRepository.GetByUserAsync(userId, page, pageSize, cancellationToken);
     var totalPages = totalItems == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)pageSize);
 
     return new PagedReadingHistoryResponse(
@@ -66,7 +68,7 @@ public class ReadingHistoryService(ReadingHistoryRepository readingHistoryReposi
       int limit,
       CancellationToken cancellationToken = default)
   {
-    var items = await _readingHistoryRepository.GetRecentByUserAsync(userId, limit, cancellationToken);
+    var items = await _readingHistoryQueryRepository.GetRecentByUserAsync(userId, limit, cancellationToken);
     return items.Select(ToResponse).ToList();
   }
 
@@ -75,7 +77,7 @@ public class ReadingHistoryService(ReadingHistoryRepository readingHistoryReposi
       Guid currentUserId,
       CancellationToken cancellationToken = default)
   {
-    var history = await _readingHistoryRepository.GetByIdAsync(id, cancellationToken)
+    var history = await _readingHistoryQueryRepository.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
 
     if (history.UserId != currentUserId)
@@ -83,8 +85,8 @@ public class ReadingHistoryService(ReadingHistoryRepository readingHistoryReposi
       throw new ForbiddenException("You can only delete your own reading history");
     }
 
-    _readingHistoryRepository.Remove(history);
-    await _readingHistoryRepository.SaveChangesAsync(cancellationToken);
+    _readingHistoryStoreRepository.Remove(history);
+    await _readingHistoryStoreRepository.SaveChangesAsync(cancellationToken);
   }
 
   private static ReadingHistoryResponse ToResponse(ReadingHistoryWithArticleData history)

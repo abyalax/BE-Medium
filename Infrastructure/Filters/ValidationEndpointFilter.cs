@@ -16,10 +16,7 @@ public sealed class ValidationEndpointFilter : IEndpointFilter
 
       var validationContext = new ValidationContext<object>(argument);
       var result = await validator.ValidateAsync(validationContext, context.HttpContext.RequestAborted);
-      if (!result.IsValid)
-      {
-        throw new ValidationException(result.Errors);
-      }
+      if (!result.IsValid) throw new ValidationException(result.Errors);
     }
 
     return await next(context);

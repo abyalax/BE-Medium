@@ -1,16 +1,8 @@
-using Medium.Api.Http.Api.Version1.Article;
-using Medium.Api.Http.Api.Version1.Auth;
-using Medium.Api.Http.Api.Version1.Bookmark;
-using Medium.Api.Http.Api.Version1.Comment;
-using Medium.Api.Http.Api.Version1.Email;
-using Medium.Api.Http.Api.Version1.Follow;
-using Medium.Api.Http.Api.Version1.Jobs;
-using Medium.Api.Http.Api.Version1.ReadingHistory;
-using Medium.Api.Http.Api.Version1.Tag;
-using Medium.Api.Http.Api.Version1.Users;
-using Medium.Api.Http.Api.Version1.Minio;
+using FluentValidation;
+
 using Medium.Api.Infrastructure;
 using Medium.Api.Infrastructure.Auth;
+using Medium.Api.Infrastructure.Behaviors;
 using Medium.Api.Infrastructure.Database;
 using Medium.Api.Infrastructure.Database.Seeds;
 using Medium.Api.Infrastructure.Extensions;
@@ -27,6 +19,8 @@ public class Program
   {
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.Services.ConfigureAppSettings(builder.Configuration);
+
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
       options.UseSqlServer(
           builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -39,17 +33,31 @@ public class Program
           })
           .AddInterceptors(new PreventDeleteWithRelationsInterceptor()));
 
+    // Scan all command and pair their validators automatically via abstract validator
+    builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+    // Register MediatR and validation Behavior
+    builder.Services.AddMediatR(cfg =>
+    {
+      cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+      // Register middleware validation before handler execution 
+      cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    });
+
+    // Infrastructure setup includes lifecycle service registration
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddModule();
 
+    builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
     builder.Services.AddJwtAuthentication(builder.Configuration);
     builder.Services.AddAuthorization(PermissionPolicies.Register);
 
-    var app = builder.Build();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<CurrentUser>();
 
+    var app = builder.Build();
     // Intercept execution here if "--seed" argument is passed
     if (DatabaseSeederRunner.HandleSeedCommandAsync(args, app).GetAwaiter().GetResult()) return; // Stop execution immediately, preventing the web server from starting
 
@@ -66,21 +74,9 @@ public class Program
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.Services.ConfigureSchedulers();
+    app.MapControllers();
 
-    app.MapAuthEndpoints();
-    app.MapRoleEndpoints();
-    app.MapPermissionEndpoints();
-    app.MapUserEndpoints();
-    app.MapArticleEndpoints();
-    app.MapTagEndpoints();
-    app.MapCommentEndpoints();
-    app.MapBookmarkEndpoints();
-    app.MapFollowEndpoints();
-    app.MapReadingHistoryEndpoints();
-    app.MapJobsEndpoints();
-    app.MapEmailEndpoints();
-    app.MapMinioEndpoints();
+    app.Services.ConfigureSchedulers();
 
     app.Run();
   }

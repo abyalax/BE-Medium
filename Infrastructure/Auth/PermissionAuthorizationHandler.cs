@@ -34,10 +34,7 @@ public sealed class PermissionAuthorizationHandler(ILogger<PermissionAuthorizati
 
     _logger.LogInformation(prettyJsonString);
 
-    if (hasPermission)
-    {
-      context.Succeed(requirement);
-    }
+    if (hasPermission) context.Succeed(requirement);
 
     return Task.CompletedTask;
   }

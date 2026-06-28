@@ -70,6 +70,10 @@ namespace Medium.Api.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("status");
 
+                    b.Property<Guid?>("ThumbnailId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("thumbnail_id");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -95,6 +99,9 @@ namespace Medium.Api.Migrations
                     b.HasIndex("Slug")
                         .IsUnique()
                         .HasDatabaseName("i_x_articles_slug");
+
+                    b.HasIndex("ThumbnailId")
+                        .HasDatabaseName("i_x_articles_thumbnail_id");
 
                     b.ToTable("articles", (string)null);
                 });
@@ -360,6 +367,82 @@ namespace Medium.Api.Migrations
                         .HasDatabaseName("i_x_notifications_user_id_is_read_created_at");
 
                     b.ToTable("notifications", (string)null);
+                });
+
+            modelBuilder.Entity("Medium.Api.Models.ObjectStorage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccessTypes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("access_types");
+
+                    b.Property<Guid?>("ArticleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("article_id");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("bucket");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("mime_type");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("object_key");
+
+                    b.Property<string>("OriginalName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("original_name");
+
+                    b.Property<int?>("Size")
+                        .HasColumnType("int")
+                        .HasColumnName("size");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_object_storages");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("i_x_object_storages_article_id");
+
+                    b.HasIndex("AuthorId")
+                        .HasDatabaseName("i_x_object_storages_author_id");
+
+                    b.HasIndex("ObjectKey")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_object_storages_object_key");
+
+                    b.ToTable("object_storages", (string)null);
                 });
 
             modelBuilder.Entity("Medium.Api.Models.Permission", b =>
@@ -644,7 +727,15 @@ namespace Medium.Api.Migrations
                         .IsRequired()
                         .HasConstraintName("f_k_articles_users_author_id");
 
+                    b.HasOne("Medium.Api.Models.ObjectStorage", "Thumbnail")
+                        .WithMany()
+                        .HasForeignKey("ThumbnailId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("f_k_articles_object_storages_thumbnail_id");
+
                     b.Navigation("Author");
+
+                    b.Navigation("Thumbnail");
                 });
 
             modelBuilder.Entity("Medium.Api.Models.ArticleTag", b =>
@@ -743,6 +834,26 @@ namespace Medium.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Medium.Api.Models.ObjectStorage", b =>
+                {
+                    b.HasOne("Medium.Api.Models.Article", "Article")
+                        .WithMany("ContentImages")
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_object_storages_articles_article_id");
+
+                    b.HasOne("Medium.Api.Models.User", "Author")
+                        .WithMany("ObjectStorages")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_object_storages_users_author_id");
+
+                    b.Navigation("Article");
+
+                    b.Navigation("Author");
+                });
+
             modelBuilder.Entity("Medium.Api.Models.ReadingHistory", b =>
                 {
                     b.HasOne("Medium.Api.Models.Article", "Article")
@@ -814,6 +925,8 @@ namespace Medium.Api.Migrations
 
                     b.Navigation("Comments");
 
+                    b.Navigation("ContentImages");
+
                     b.Navigation("ReadingHistories");
                 });
 
@@ -845,6 +958,8 @@ namespace Medium.Api.Migrations
                     b.Navigation("Followers");
 
                     b.Navigation("Following");
+
+                    b.Navigation("ObjectStorages");
 
                     b.Navigation("ReadingHistories");
 

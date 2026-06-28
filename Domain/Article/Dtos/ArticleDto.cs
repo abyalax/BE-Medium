@@ -1,0 +1,26 @@
+
+using Medium.Api.Domain.Tag.Dtos;
+using Medium.Api.Enums;
+using Medium.Api.Infrastructure.Storage.Dtos;
+
+namespace Medium.Api.Domain.Article.Dtos;
+
+public record ArticleDto(
+  Guid Id,
+  Guid AuthorId,
+  string AuthorName,
+  string Title,
+  string Slug,
+  string Content,
+  string? CoverImageUrl,
+  Guid? ThumbnailId,
+  ObjectStorageDto? Thumbnail,
+  IReadOnlyCollection<ObjectStorageDto> ContentImages,
+  ArticleStatus Status,
+  DateTime? PublishedAt,
+  DateTime? ScheduledAt,
+  long ViewCount,
+  IReadOnlyCollection<TagDto> Tags,
+  DateTime CreatedAt,
+  DateTime UpdatedAt
+);

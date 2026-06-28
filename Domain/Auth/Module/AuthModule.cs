@@ -1,12 +1,7 @@
-using FluentValidation;
-
-using Medium.Api.Domain.Auth.DTOs;
-using Medium.Api.Domain.Auth.Services;
-using Medium.Api.Http.Api.Version1.Auth;
+using Medium.Api.Domain.Auth.EventHandlers;
 using Medium.Api.Infrastructure.Auth;
 
 using Microsoft.AspNetCore.Authorization;
-
 
 namespace Medium.Api.Domain.Auth.Module;
 
@@ -18,14 +13,8 @@ public static class AuthModule
     services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
     services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-    services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
-    services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
-    services.AddScoped<IValidator<RoleEndpoints.CreateRoleRequest>, CreateRoleRequestValidator>();
-    services.AddScoped<IValidator<PermissionEndpoints.CreatePermissionRequest>, CreatePermissionRequestValidator>();
-
-    services.AddScoped<AuthService>();
-    services.AddScoped<RoleService>();
-    services.AddScoped<PermissionService>();
+    services.AddScoped<OnUserRegisteredHandler>();
+    services.AddScoped<OnUserLoggedInHandler>();
 
     return services;
   }

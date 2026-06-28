@@ -28,6 +28,19 @@ public class ArticleConfiguration : IEntityTypeConfiguration<Article>
     builder.Property(a => a.CoverImageUrl)
         .HasMaxLength(500);
 
+    builder.Property(a => a.ThumbnailId)
+        .IsRequired(false);
+
+    builder.HasOne(a => a.Thumbnail)
+        .WithMany()
+        .HasForeignKey(a => a.ThumbnailId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    builder.HasMany(a => a.ContentImages)
+        .WithOne(os => os.Article)
+        .HasForeignKey(os => os.ArticleId)
+        .OnDelete(DeleteBehavior.Cascade);
+
     builder.Property(a => a.Status)
         .HasConversion(
             v => v.ToString(),

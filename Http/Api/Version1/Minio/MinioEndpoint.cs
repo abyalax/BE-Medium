@@ -1,5 +1,5 @@
 
-using Medium.Api.Infrastructure.Minio.Services;
+using Medium.Api.Infrastructure.Storage.Services;
 
 namespace Medium.Api.Http.Api.Version1.Minio;
 
@@ -8,52 +8,38 @@ public static class MinioEndpoints
   public static void MapMinioEndpoints(this IEndpointRouteBuilder app)
   {
     var group = app.MapGroup("/api/storage")
-      .WithTags("Storage")
-      .RequireAuthorization();
+        .WithTags("Storage")
+        .RequireAuthorization();
 
-    group.MapPost("/upload", async (
-        MinioService minioService,
-        IFormFile file,
-        CancellationToken cancellationToken
-      ) =>
+    group.MapPost("/presigned-upload", async (
+        StorageService StorageService,
+        CancellationToken cancellationToken) =>
     {
-      var objectName = $"{Guid.NewGuid()}-{file.FileName}";
-      await minioService.UploadAsync(objectName, file.OpenReadStream(), file.ContentType, cancellationToken);
+      var authorId = Guid.NewGuid();
+      var uploadUrl = await StorageService.GetPresignedUploadUrlAsync(authorId, 3600, cancellationToken);
 
-      return Results.Ok(new { objectName, message = "File uploaded successfully" });
+      return Results.Ok(new { authorId, uploadUrl });
     })
-    .WithName("UploadFile")
-    .WithOpenApi()
-    .Accepts<IFormFile>("multipart/form-data");
-
-    group.MapGet("/download/{objectName}", async (
-      string objectName,
-      MinioService minioService,
-      CancellationToken cancellationToken) =>
-    {
-      var stream = await minioService.DownloadAsync(objectName, cancellationToken);
-      return Results.File(stream, "application/octet-stream", objectName);
-    })
-    .WithName("DownloadFile")
+    .WithName("GetPresignedUploadUrl")
     .WithOpenApi();
 
-    group.MapGet("/url/{objectName}", async (
-      string objectName,
-      MinioService minioService,
-      CancellationToken cancellationToken) =>
+    group.MapPost("/presigned-download/{objectName}", async (
+        string objectName,
+        StorageService StorageService,
+        CancellationToken cancellationToken) =>
     {
-      var url = await minioService.GetPresignedUrlAsync(objectName, 3600, cancellationToken);
-      return Results.Ok(new { url });
+      var downloadUrl = await StorageService.GetPresignedDownloadUrlAsync(objectName, 3600, cancellationToken);
+      return Results.Ok(new { downloadUrl });
     })
-    .WithName("GetPresignedUrl")
+    .WithName("GetPresignedDownloadUrl")
     .WithOpenApi();
 
     group.MapDelete("/{objectName}", async (
-      string objectName,
-      MinioService minioService,
-      CancellationToken cancellationToken) =>
+        string objectName,
+        StorageService StorageService,
+        CancellationToken cancellationToken) =>
     {
-      await minioService.DeleteAsync(objectName, cancellationToken);
+      await StorageService.DeleteAsync(objectName, cancellationToken);
       return Results.Ok(new { message = "File deleted successfully" });
     })
     .WithName("DeleteFile")

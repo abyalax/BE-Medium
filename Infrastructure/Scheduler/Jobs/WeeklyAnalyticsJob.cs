@@ -12,20 +12,20 @@ using Medium.Api.Infrastructure.Email.Services;
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
 public class WeeklyAnalyticsJob(
-    FollowRepository followRepository,
-    ArticleRepository articleRepository,
-    CommentRepository commentRepository,
-    UserRepository userRepository,
+    FollowQueryRepository followQueryRepository,
+    ArticleQueryRepository articleQueryRepository,
+    CommentQueryRepository commentQueryRepository,
+    UserQueryRepository userQueryRepository,
     NotificationService notificationService,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
     ILogger<WeeklyAnalyticsJob> logger
   ) : IInvocable
 {
-  private readonly FollowRepository _followRepository = followRepository;
-  private readonly ArticleRepository _articleRepository = articleRepository;
-  private readonly CommentRepository _commentRepository = commentRepository;
-  private readonly UserRepository _userRepository = userRepository;
+  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
+  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
+  private readonly CommentQueryRepository _commentQueryRepository = commentQueryRepository;
+  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
   private readonly NotificationService _notificationService = notificationService;
   private readonly MailpitEmailService _emailService = emailService;
   private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
@@ -41,13 +41,13 @@ public class WeeklyAnalyticsJob(
       var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
 
       // Get total user count (approximate by counting follows)
-      var totalFollows = await _followRepository.GetTotalFollowsCountAsync(default);
+      var totalFollows = await _followQueryRepository.GetTotalFollowsCountAsync(default);
 
       // Get new articles this week
-      var newArticlesCount = await _articleRepository.GetArticlesCountSinceAsync(oneWeekAgo, default);
+      var newArticlesCount = await _articleQueryRepository.GetArticlesCountSinceAsync(oneWeekAgo, default);
 
       // Get new comments this week
-      var newCommentsCount = await _commentRepository.GetCommentsCountSinceAsync(oneWeekAgo, default);
+      var newCommentsCount = await _commentQueryRepository.GetCommentsCountSinceAsync(oneWeekAgo, default);
 
       var weeklyStats = new Dictionary<string, object>
       {
@@ -61,7 +61,7 @@ public class WeeklyAnalyticsJob(
       _logger.LogInformation("WeeklyAnalyticsJob completed. Stats: {@Stats}", weeklyStats);
 
       // Save analytics as notification for admins (in real app, would save to analytics table)
-      var adminUsers = await _userRepository.ListAsync(1, 10, default);
+      var adminUsers = await _userQueryRepository.ListAsync(1, 10, default);
       foreach (var admin in adminUsers)
       {
         await _notificationService.CreateAsync(new CreateNotificationRequest(
@@ -78,7 +78,7 @@ public class WeeklyAnalyticsJob(
       var weekStart = oneWeekAgo.ToString("MMM dd, yyyy");
       var weekEnd = DateTime.UtcNow.ToString("MMM dd, yyyy");
 
-      var topArticles = await _articleRepository.GetPublishedAsync(1, 5, default);
+      var topArticles = await _articleQueryRepository.GetPublishedAsync(1, 5, default);
       var topArticleItems = new List<NewsletterArticleItem>();
 
       foreach (var article in topArticles)

@@ -14,6 +14,8 @@ public class Article : Entity
 
   public string? CoverImageUrl { get; set; }
 
+  public Guid? ThumbnailId { get; set; }
+
   public ArticleStatus Status { get; set; }
 
   public DateTime? PublishedAt { get; set; }
@@ -24,6 +26,10 @@ public class Article : Entity
 
   // Navigation
   public User Author { get; set; } = null!;
+
+  public ObjectStorage? Thumbnail { get; set; }
+
+  public ICollection<ObjectStorage> ContentImages { get; set; } = [];
 
   public ICollection<ArticleTag> ArticleTags { get; set; } = [];
 

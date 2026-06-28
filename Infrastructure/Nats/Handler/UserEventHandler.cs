@@ -10,13 +10,13 @@ namespace Medium.Api.Infrastructure.Nats.Handler;
 public class UserFollowedEventHandler(
     ILogger<UserFollowedEventHandler> logger,
     NotificationService notificationService,
-    UserRepository userRepository,
+    UserQueryRepository userQueryRepository,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService) : IEventHandler<UserFollowedEvent>
 {
   private readonly ILogger<UserFollowedEventHandler> _logger = logger;
   private readonly NotificationService _notificationService = notificationService;
-  private readonly UserRepository _userRepository = userRepository;
+  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
   private readonly MailpitEmailService _emailService = emailService;
   private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
@@ -27,8 +27,8 @@ public class UserFollowedEventHandler(
       _logger.LogInformation("Handling UserFollowed: {FollowerId} -> {FollowingId}", @event.FollowerId, @event.FollowingId);
 
       // Get users
-      var follower = await _userRepository.GetByIdAsync(Guid.Parse(@event.FollowerId), default);
-      var following = await _userRepository.GetByIdAsync(Guid.Parse(@event.FollowingId), default);
+      var follower = await _userQueryRepository.GetByIdAsync(Guid.Parse(@event.FollowerId), default);
+      var following = await _userQueryRepository.GetByIdAsync(Guid.Parse(@event.FollowingId), default);
 
       if (follower == null || following == null)
       {

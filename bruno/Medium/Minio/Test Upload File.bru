@@ -1,0 +1,16 @@
+meta {
+  name: Test Upload File
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{URL_API}}/storage/presigned-upload
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

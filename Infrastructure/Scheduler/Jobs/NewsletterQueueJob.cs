@@ -11,19 +11,19 @@ using Medium.Api.Infrastructure.Nats.Services;
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
 public class NewsletterQueueJob(
-    CommentRepository commentRepository,
-    ArticleRepository articleRepository,
-    FollowRepository followRepository,
-    UserRepository userRepository,
+    CommentQueryRepository commentQueryRepository,
+    ArticleQueryRepository articleQueryRepository,
+    FollowQueryRepository followQueryRepository,
+    UserQueryRepository userQueryRepository,
     INatsPublisher publisher,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
     ILogger<NewsletterQueueJob> logger) : IInvocable
 {
-  private readonly CommentRepository _commentRepository = commentRepository;
-  private readonly ArticleRepository _articleRepository = articleRepository;
-  private readonly FollowRepository _followRepository = followRepository;
-  private readonly UserRepository _userRepository = userRepository;
+  private readonly CommentQueryRepository _commentQueryRepository = commentQueryRepository;
+  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
+  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
+  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
   private readonly INatsPublisher _publisher = publisher;
   private readonly MailpitEmailService _emailService = emailService;
   private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
@@ -41,12 +41,12 @@ public class NewsletterQueueJob(
       var weekEnd = weekStart.AddDays(6);
 
       // Get weekly statistics
-      var newArticlesCount = await _articleRepository.GetArticlesCountSinceAsync(weekStart, default);
-      var newCommentsCount = await _commentRepository.GetCommentsCountSinceAsync(weekStart, default);
-      var newFollowersCount = await _followRepository.GetTotalFollowsCountAsync(default);
+      var newArticlesCount = await _articleQueryRepository.GetArticlesCountSinceAsync(weekStart, default);
+      var newCommentsCount = await _commentQueryRepository.GetCommentsCountSinceAsync(weekStart, default);
+      var newFollowersCount = await _followQueryRepository.GetTotalFollowsCountAsync(default);
 
       // Get top articles this week
-      var topArticles = await _articleRepository.GetPublishedAsync(1, 5, default);
+      var topArticles = await _articleQueryRepository.GetPublishedAsync(1, 5, default);
       var topArticleItems = new List<NewsletterArticleItem>();
 
       foreach (var article in topArticles)
@@ -59,7 +59,7 @@ public class NewsletterQueueJob(
       }
 
       // Get all users for newsletter (TODO: would only get subscribers)
-      var users = await _userRepository.ListAsync(1, 100, default);
+      var users = await _userQueryRepository.ListAsync(1, 100, default);
 
       foreach (var user in users)
       {

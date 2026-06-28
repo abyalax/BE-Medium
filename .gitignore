@@ -18,6 +18,9 @@ obj/
 # VS Code
 .vscode/
 
+# temporary docs
+docs/
+
 # Test results
 TestResults/
 

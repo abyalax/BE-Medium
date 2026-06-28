@@ -4,16 +4,14 @@ public record CreateTagRequest(string Name);
 
 public record UpdateTagRequest(string Name);
 
-public record TagResponse(
+public record TagDto(
     Guid Id,
     string Name,
-    string Slug,
-    DateTime CreatedAt,
-    DateTime UpdatedAt
+    string Slug
 );
 
-public record PagedTagResponse(
-    IReadOnlyCollection<TagResponse> Items,
+public record PagedTagDto(
+    IReadOnlyCollection<TagDto> Items,
     int Page,
     int PageSize,
     int TotalItems,

@@ -19,4 +19,6 @@ public class User : Entity
   public ICollection<Follow> Followers { get; set; } = [];
   public ICollection<Follow> Following { get; set; } = [];
   public ICollection<ReadingHistory> ReadingHistories { get; set; } = [];
+
+  public ICollection<ObjectStorage> ObjectStorages { get; set; } = [];
 }

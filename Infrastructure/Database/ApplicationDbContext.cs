@@ -39,6 +39,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
   // Junction Tables
   public DbSet<ArticleTag> ArticleTags => Set<ArticleTag>();
 
+  // Object Storage
+  public DbSet<ObjectStorage> ObjectStorages => Set<ObjectStorage>();
+
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
@@ -58,6 +61,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     modelBuilder.ApplyConfiguration(new RolePermissionConfiguration());
     modelBuilder.ApplyConfiguration(new ArticleTagConfiguration());
     modelBuilder.ApplyConfiguration(new NotificationConfiguration());
+    modelBuilder.ApplyConfiguration(new ObjectStorageConfiguration());
 
     // Configure snake_case naming convention
     ConfigureSnakeCaseNaming(modelBuilder);

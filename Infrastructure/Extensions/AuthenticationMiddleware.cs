@@ -45,22 +45,24 @@ public static class AuthenticationExtensions
       options.Events = new JwtBearerEvents
       {
         OnChallenge = async context =>
-            {
-              context.HandleResponse();
-              await ApiResponseWriter.WriteAsync(
-                      context.HttpContext,
-                      StatusCodes.Status401Unauthorized,
-                      "Unauthorized",
-                      "Authentication is required");
-            },
+          {
+            context.HandleResponse();
+            await ApiResponseWriter.WriteAsync(
+              context.HttpContext,
+              StatusCodes.Status401Unauthorized,
+              "Unauthorized",
+              "Authentication is required"
+            );
+          },
         OnForbidden = async context =>
-            {
-              await ApiResponseWriter.WriteAsync(
-                      context.HttpContext,
-                      StatusCodes.Status403Forbidden,
-                      "Forbidden",
-                      "You don't have permission");
-            }
+          {
+            await ApiResponseWriter.WriteAsync(
+              context.HttpContext,
+              StatusCodes.Status403Forbidden,
+              "Forbidden",
+              "You don't have permission"
+            );
+          }
       };
     });
 

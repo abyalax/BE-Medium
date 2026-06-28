@@ -1,5 +1,3 @@
-using System.Net;
-
 using FluentValidation;
 
 using Medium.Api.Infrastructure.Exceptions;

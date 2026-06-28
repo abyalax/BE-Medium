@@ -13,16 +13,16 @@ namespace Medium.Api.Infrastructure.Nats.Handler;
 public class CommentCreatedEventHandler(
     ILogger<CommentCreatedEventHandler> logger,
     NotificationService notificationService,
-    ArticleRepository articleRepository,
-    UserRepository userRepository,
+    ArticleQueryRepository articleQueryRepository,
+    UserQueryRepository userQueryRepository,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService
   ) : IEventHandler<CommentCreatedEvent>
 {
   private readonly ILogger<CommentCreatedEventHandler> _logger = logger;
   private readonly NotificationService _notificationService = notificationService;
-  private readonly ArticleRepository _articleRepository = articleRepository;
-  private readonly UserRepository _userRepository = userRepository;
+  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
+  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
   private readonly MailpitEmailService _emailService = emailService;
   private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
@@ -33,7 +33,7 @@ public class CommentCreatedEventHandler(
       _logger.LogInformation("Handling CommentCreated: {CommentId} on {ArticleId}", @event.CommentId, @event.ArticleId);
 
       // Get article to notify author
-      var article = await _articleRepository.GetByIdAsync(Guid.Parse(@event.ArticleId), default);
+      var article = await _articleQueryRepository.GetByIdAsync(Guid.Parse(@event.ArticleId), default);
       if (article == null)
       {
         _logger.LogWarning("Article {ArticleId} not found for comment {CommentId}", @event.ArticleId, @event.CommentId);
@@ -41,7 +41,7 @@ public class CommentCreatedEventHandler(
       }
 
       // Get commenter info
-      var commenter = await _userRepository.GetByIdAsync(Guid.Parse(@event.UserId), default);
+      var commenter = await _userQueryRepository.GetByIdAsync(Guid.Parse(@event.UserId), default);
 
       // Notify article author
       if (article.AuthorId != Guid.Parse(@event.UserId))

@@ -1,3 +1,7 @@
-namespace Medium.Api.Domain.Auth.DTOs;
+namespace Medium.Api.Domain.Auth.Dtos;
 
-public record RoleResponse(Guid Id, string Name, string Description);
+public record RoleResponse(
+  Guid Id,
+  string Name,
+  string? Description = null
+);

@@ -15,13 +15,13 @@ public interface IEventHandler<in T> where T : class
 public class ArticlePublishedEventHandler(
     ILogger<ArticlePublishedEventHandler> logger,
     NotificationService notificationService,
-    FollowRepository followRepository,
+    FollowQueryRepository followQueryRepository,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService) : IEventHandler<ArticlePublishedEvent>
 {
   private readonly ILogger<ArticlePublishedEventHandler> _logger = logger;
   private readonly NotificationService _notificationService = notificationService;
-  private readonly FollowRepository _followRepository = followRepository;
+  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
   private readonly MailpitEmailService _emailService = emailService;
   private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
 
@@ -32,7 +32,7 @@ public class ArticlePublishedEventHandler(
       _logger.LogInformation("Handling ArticlePublished: {ArticleId}", @event.ArticleId);
 
       // Fetch followers (Consider removing pagination if you need to notify ALL followers)
-      var followers = await _followRepository.GetFollowersAsync(Guid.Parse(@event.AuthorId), 1, 100, default);
+      var followers = await _followQueryRepository.GetFollowersAsync(Guid.Parse(@event.AuthorId), 1, 100, default);
       if (followers == null || !followers.Any())
       {
         _logger.LogInformation("No followers found for Author: {AuthorId}", @event.AuthorId);

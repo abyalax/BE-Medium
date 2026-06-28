@@ -14,6 +14,16 @@ public static class ApiResponseWriter
         data);
   }
 
+  public static ApiResponse Error(string message = "Error", int statusCode = StatusCodes.Status400BadRequest, object? errors = null)
+  {
+    return new ApiResponse(
+        statusCode,
+        ReasonPhrase(statusCode),
+        message,
+        errors,
+        null);
+  }
+
   public static async Task WriteAsync(
       HttpContext context,
       int statusCode,

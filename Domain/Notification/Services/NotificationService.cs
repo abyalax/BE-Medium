@@ -1,3 +1,5 @@
+// TODO: remove this layer service and migrate it to CQRS Pattern
+
 using Medium.Api.Domain.Notification.Dtos;
 using Medium.Api.Domain.Notification.Repositories;
 
@@ -5,9 +7,10 @@ using NotificationModel = Medium.Api.Models.Notification;
 
 namespace Medium.Api.Domain.Notification.Services;
 
-public class NotificationService(NotificationRepository notificationRepository)
+public class NotificationService(NotificationStoreRepository notificationStoreRepository, NotificationQueryRepository notificationQueryRepository)
 {
-  private readonly NotificationRepository _notificationRepository = notificationRepository;
+  private readonly NotificationStoreRepository _notificationStoreRepository = notificationStoreRepository;
+  private readonly NotificationQueryRepository _notificationQueryRepository = notificationQueryRepository;
 
   public async Task<NotificationResponse> CreateAsync(CreateNotificationRequest request, CancellationToken cancellationToken = default)
   {
@@ -23,8 +26,8 @@ public class NotificationService(NotificationRepository notificationRepository)
       CreatedAt = DateTime.UtcNow
     };
 
-    await _notificationRepository.AddAsync(notification, cancellationToken);
-    await _notificationRepository.SaveChangesAsync(cancellationToken);
+    await _notificationStoreRepository.AddAsync(notification, cancellationToken);
+    await _notificationStoreRepository.SaveChangesAsync(cancellationToken);
 
     return new NotificationResponse(
         notification.Id.ToString(),
@@ -64,8 +67,8 @@ notification.CreatedAt
     }).ToList();
 
     // 2. Bulk insert into repository (Only 1 database roundtrip for local operations)
-    await _notificationRepository.AddRangeAsync(notifications, cancellationToken);
-    await _notificationRepository.SaveChangesAsync(cancellationToken);
+    await _notificationStoreRepository.AddRangeAsync(notifications, cancellationToken);
+    await _notificationStoreRepository.SaveChangesAsync(cancellationToken);
 
     // 3. Project the saved models back to responses
     return notifications.Select(notification => new NotificationResponse(
@@ -84,12 +87,12 @@ notification.CreatedAt
 
   public async Task MarkAsReadAsync(string notificationId, CancellationToken cancellationToken = default)
   {
-    await _notificationRepository.MarkAsReadAsync(notificationId, cancellationToken);
+    await _notificationStoreRepository.MarkAsReadAsync(notificationId, cancellationToken);
   }
 
   public async Task<List<NotificationResponse>> GetUserNotificationsAsync(string userId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
   {
-    var notifications = await _notificationRepository.GetUserNotificationsAsync(userId, page, pageSize, cancellationToken);
+    var notifications = await _notificationQueryRepository.GetUserNotificationsAsync(userId, page, pageSize, cancellationToken);
 
     return notifications.Select(n => new NotificationResponse(
         n.Id.ToString(),
