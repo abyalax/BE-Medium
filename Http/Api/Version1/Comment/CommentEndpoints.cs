@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 using Medium.Api.Domain.Comment.Dtos;
 using Medium.Api.Domain.Comment.Services;
-using Medium.Api.Infrastructure.Auth;
+using Medium.Api.Common.Constant;
 using Medium.Api.Infrastructure.Filters;
 using Medium.Api.Infrastructure.Http;
 

@@ -1,10 +1,11 @@
+
 using Bogus;
 
 using Medium.Api.Enums;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Models;
 
-using AuthPermissions = Medium.Api.Infrastructure.Auth.Permissions;
+using CommonUtils = Medium.Api.Common.Utils.Utils;
 
 namespace Medium.Api.Infrastructure.Database.Seeds;
 
@@ -14,42 +15,6 @@ public static class DatabaseMockData
   public static readonly Guid ReaderRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
   public static readonly Guid AuthorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
   public static readonly Guid AdminRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
-
-  public static readonly IReadOnlyCollection<PermissionSeed> Permissions =
-  [
-      new("aaaaaaaa-0000-0000-0000-000000000001", AuthPermissions.Articles.Get, "Read articles", "Read published articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000002", AuthPermissions.Bookmarks.Create, "Bookmark articles", "Bookmark published articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000003", AuthPermissions.Authors.Follow, "Follow authors", "Follow article authors"),
-        new("aaaaaaaa-0000-0000-0000-000000000004", AuthPermissions.Comments.Create, "Create comments", "Comment on articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000005", AuthPermissions.Authors.GetProfile, "Read author profiles", "View author profile pages"),
-        new("aaaaaaaa-0000-0000-0000-000000000006", AuthPermissions.ReadingHistory.Get, "Read history", "View own reading history"),
-        new("aaaaaaaa-0000-0000-0000-000000000007", AuthPermissions.Articles.Create, "Create articles", "Create articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000008", AuthPermissions.Articles.UpdateOwn, "Edit own articles", "Edit owned articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000009", AuthPermissions.Articles.Publish, "Publish articles", "Publish owned articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000010", AuthPermissions.Articles.Archive, "Archive articles", "Archive owned articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000011", AuthPermissions.Articles.DeleteOwn, "Delete own articles", "Delete owned articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000012", AuthPermissions.Analytics.GetOwn, "Own article analytics", "View analytics for owned articles"),
-        new("aaaaaaaa-0000-0000-0000-000000000013", AuthPermissions.Users.Get, "Read users", "View users"),
-        new("aaaaaaaa-0000-0000-0000-000000000014", AuthPermissions.Users.Create, "Create users", "Create users"),
-        new("aaaaaaaa-0000-0000-0000-000000000015", AuthPermissions.Users.Update, "Update users", "Update users"),
-        new("aaaaaaaa-0000-0000-0000-000000000016", AuthPermissions.Users.Delete, "Delete users", "Delete users"),
-        new("aaaaaaaa-0000-0000-0000-000000000017", AuthPermissions.Users.AssignRoles, "Assign user roles", "Assign roles to users"),
-        new("aaaaaaaa-0000-0000-0000-000000000018", AuthPermissions.Roles.Get, "Read roles", "View roles"),
-        new("aaaaaaaa-0000-0000-0000-000000000019", AuthPermissions.Roles.Create, "Create roles", "Create roles"),
-        new("aaaaaaaa-0000-0000-0000-000000000020", AuthPermissions.Roles.Update, "Update roles", "Update roles"),
-        new("aaaaaaaa-0000-0000-0000-000000000021", AuthPermissions.Roles.Delete, "Delete roles", "Delete roles"),
-        new("aaaaaaaa-0000-0000-0000-000000000022", AuthPermissions.Roles.AssignPermissions, "Assign role permissions", "Assign permissions to roles"),
-        new("aaaaaaaa-0000-0000-0000-000000000023", AuthPermissions.Roles.AssignUsers, "Assign user roles", "Assign roles to users"),
-        new("aaaaaaaa-0000-0000-0000-000000000024", AuthPermissions.PermissionsModule.Get, "Read permissions", "View permissions"),
-        new("aaaaaaaa-0000-0000-0000-000000000025", AuthPermissions.PermissionsModule.Create, "Create permissions", "Create permissions"),
-        new("aaaaaaaa-0000-0000-0000-000000000026", AuthPermissions.PermissionsModule.Update, "Update permissions", "Update permissions"),
-        new("aaaaaaaa-0000-0000-0000-000000000027", AuthPermissions.PermissionsModule.Delete, "Delete permissions", "Delete permissions"),
-        new("aaaaaaaa-0000-0000-0000-000000000028", AuthPermissions.Tags.Manage, "Manage tags", "Manage article tags"),
-        new("aaaaaaaa-0000-0000-0000-000000000029", AuthPermissions.Articles.Moderate, "Moderate articles", "Moderate article content"),
-        new("aaaaaaaa-0000-0000-0000-000000000030", AuthPermissions.Articles.DeleteAny, "Delete any article", "Delete any article"),
-        new("aaaaaaaa-0000-0000-0000-000000000031", AuthPermissions.Analytics.GetSystem, "System analytics", "Access system analytics"),
-        new("aaaaaaaa-0000-0000-0000-000000000032", AuthPermissions.Admin.ManageData, "Manage administrative data", "Manage administrative data")
-  ];
 
   public static List<User> GeneratedUsers { get; private set; } = [];
   public static List<UserRole> GeneratedUserRoles { get; private set; } = [];
@@ -77,9 +42,9 @@ public static class DatabaseMockData
 
     GeneratedUsers.AddRange([adminUser, authorUser, readerUser]);
     GeneratedUserRoles.AddRange([
-        new UserRole { UserId = adminUser.Id, RoleId = AdminRoleId },
-            new UserRole { UserId = authorUser.Id, RoleId = AuthorRoleId },
-            new UserRole { UserId = readerUser.Id, RoleId = ReaderRoleId }
+      new UserRole { UserId = adminUser.Id, RoleId = AdminRoleId },
+      new UserRole { UserId = authorUser.Id, RoleId = AuthorRoleId },
+      new UserRole { UserId = readerUser.Id, RoleId = ReaderRoleId }
     ]);
 
     // 2. Generate 50 Deterministic Base Users (mix of Authors and Readers)
@@ -138,7 +103,7 @@ public static class DatabaseMockData
           Id = artId,
           AuthorId = authorId,
           Title = title,
-          Slug = GenerateSlug(title),
+          Slug = CommonUtils.GenerateSlug(title),
           Content = $"# {title}\n\n{faker.Lorem.Paragraphs(3)}",
           CoverImageUrl = faker.Image.PicsumUrl(),
           Status = status,
@@ -227,19 +192,5 @@ public static class DatabaseMockData
         SubscribedAt = DateTime.UtcNow.AddDays(-30)
       });
     }
-  }
-
-  public sealed record PermissionSeed(string IdValue, string Code, string Name, string Description)
-  {
-    public Guid Id { get; } = Guid.Parse(IdValue);
-  }
-
-  private static string GenerateSlug(string title)
-  {
-    var slug = title.ToLowerInvariant();
-    slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
-    slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\s+", "-");
-    slug = slug.Trim('-');
-    return slug;
   }
 }

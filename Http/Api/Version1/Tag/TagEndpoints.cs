@@ -1,6 +1,6 @@
 using Medium.Api.Domain.Tag.Dtos;
 using Medium.Api.Domain.Tag.Services;
-using Medium.Api.Infrastructure.Auth;
+using Medium.Api.Common.Constant;
 using Medium.Api.Infrastructure.Filters;
 using Medium.Api.Infrastructure.Http;
 
@@ -25,7 +25,7 @@ public static class TagEndpoints
       var tags = await tagService.ListAsync(page, pageSize, cancellationToken);
       return Results.Json(ApiResponseWriter.Success(tags));
     })
-    .RequireAuthorization(Permissions.Tags.Manage)
+    .RequireAuthorization(Permissions.Tags.Read)
     .WithName("ListTags")
     .WithOpenApi();
 
@@ -47,7 +47,7 @@ public static class TagEndpoints
     {
       return Results.Json(ApiResponseWriter.Success(await tagService.GetByIdAsync(id, cancellationToken)));
     })
-    .RequireAuthorization(Permissions.Tags.Manage)
+    .RequireAuthorization(Permissions.Tags.Read)
     .WithName("GetTagById")
     .WithOpenApi();
 
@@ -58,7 +58,7 @@ public static class TagEndpoints
     {
       return Results.Json(ApiResponseWriter.Success(await tagService.CreateAsync(request, cancellationToken), "Created"), statusCode: StatusCodes.Status201Created);
     })
-    .RequireAuthorization(Permissions.Tags.Manage)
+    .RequireAuthorization(Permissions.Tags.Create)
     .WithName("CreateTag")
     .WithOpenApi();
 
@@ -70,7 +70,7 @@ public static class TagEndpoints
     {
       return Results.Json(ApiResponseWriter.Success(await tagService.UpdateAsync(id, request, cancellationToken)));
     })
-    .RequireAuthorization(Permissions.Tags.Manage)
+    .RequireAuthorization(Permissions.Tags.Update)
     .WithName("UpdateTag")
     .WithOpenApi();
 
@@ -82,7 +82,7 @@ public static class TagEndpoints
       await tagService.DeleteAsync(id, cancellationToken);
       return Results.Json(ApiResponseWriter.Success(null, "Deleted"));
     })
-    .RequireAuthorization(Permissions.Tags.Manage)
+    .RequireAuthorization(Permissions.Tags.Delete)
     .WithName("DeleteTag")
     .WithOpenApi();
   }

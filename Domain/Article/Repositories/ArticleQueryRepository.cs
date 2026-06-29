@@ -18,7 +18,7 @@ public class ArticleQueryRepository(ApplicationDbContext context)
       .Include(a => a.Thumbnail)
       .Include(a => a.ContentImages)
       .Include(a => a.ArticleTags)
-          .ThenInclude(at => at.Tag)
+        .ThenInclude(at => at.Tag)
       .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
   }
 

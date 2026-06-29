@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-
 using FluentValidation;
 
 using MediatR;
@@ -25,6 +23,8 @@ using Medium.Api.Infrastructure.Nats.Module;
 using Medium.Api.Infrastructure.Scheduler.Module;
 using Medium.Api.Infrastructure.Storage;
 using Medium.Api.Infrastructure.Storage.Module;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 
 namespace Medium.Api.Infrastructure;

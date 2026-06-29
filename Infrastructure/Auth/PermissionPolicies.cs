@@ -1,3 +1,5 @@
+using Medium.Api.Common.Constant;
+
 using Microsoft.AspNetCore.Authorization;
 
 namespace Medium.Api.Infrastructure.Auth;

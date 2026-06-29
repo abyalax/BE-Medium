@@ -1,5 +1,6 @@
 using MediatR;
 
+using Medium.Api.Common.Constant;
 using Medium.Api.Domain.User.Commands;
 using Medium.Api.Domain.User.Queries;
 using Medium.Api.Infrastructure.Auth;

@@ -2,8 +2,8 @@ using MediatR;
 
 using Medium.Api.Domain.Auth.Commands;
 using Medium.Api.Domain.Auth.Queries;
-using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Http;
+using Medium.Api.Common.Constant;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

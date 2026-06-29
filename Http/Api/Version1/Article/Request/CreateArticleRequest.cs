@@ -21,8 +21,8 @@ public class CreateArticleRequest : AbstractValidator<CreateArticleCommand>
       .WithMessage("Cover image URL must be a valid URL");
 
     RuleForEach(x => x.TagIds)
-        .Must(guid => Guid.TryParse(guid.ToString(), out _))
-        .When(x => x.TagIds != null && x.TagIds.Count > 0)
-        .WithMessage("Tag IDs must be valid GUIDs");
+      .Must(guid => Guid.TryParse(guid.ToString(), out _))
+      .When(x => x.TagIds != null && x.TagIds.Count > 0)
+      .WithMessage("Tag IDs must be valid GUIDs");
   }
 }

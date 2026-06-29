@@ -1,5 +1,3 @@
-using MediatR;
-
 using Medium.Api.Domain.Article.Dtos;
 using Medium.Api.Infrastructure.Pagination;
 

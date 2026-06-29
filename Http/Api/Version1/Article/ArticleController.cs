@@ -104,12 +104,13 @@ public class ArticleController(IMediator mediator, CurrentUser currentUser) : Co
 
   [HttpGet("search")]
   [AllowAnonymous]
-  public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] int page = 1, [FromQuery] int perPage = 10, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> Search([FromQuery] string search, [FromQuery] int page = 1, [FromQuery] int perPage = 10, CancellationToken cancellationToken = default)
   {
-    var query = new SearchArticlesQuery(searchTerm)
+    var query = new SearchArticlesQuery()
     {
       Page = page,
-      PerPage = perPage
+      PerPage = perPage,
+      Search = search
     };
     var response = await mediator.Send(query, cancellationToken);
     return Ok(ApiResponseWriter.Success(response));

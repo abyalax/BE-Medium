@@ -19,11 +19,11 @@ public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerato
     var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
     var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+      {
+        new(JwtRegisteredClaimNames.Sub, userId.ToString()),
+        new(JwtRegisteredClaimNames.Email, email),
+        new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+      };
 
     foreach (var role in roles)
     {

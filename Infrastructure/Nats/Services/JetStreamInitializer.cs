@@ -15,7 +15,7 @@ public static class JetStreamInitializer
       try
       {
         var accountInfo = await js.GetAccountInfoAsync(cancellationToken: cancellationToken);
-        logger.LogInformation("JetStream is enabled. Streams: {StreamCount}, Consumers: {ConsumerCount}", 
+        logger.LogInformation("JetStream is enabled. Streams: {StreamCount}, Consumers: {ConsumerCount}",
           accountInfo.Streams, accountInfo.Consumers);
       }
       catch (NatsJSException ex)

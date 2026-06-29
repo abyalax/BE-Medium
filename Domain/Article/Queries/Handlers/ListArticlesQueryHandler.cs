@@ -24,10 +24,7 @@ public class ListArticlesQueryHandler(
     var cacheKey = $"articles:list:{page}:{pageSize}:{query.AuthorId}:{query.TagSlug}:{query.Search}:{query.Status}:{query.SortBy}";
 
     var cachedResponse = await redisService.GetAsync<PaginationModel<ArticleDto>>(cacheKey, cancellationToken);
-    if (cachedResponse != null)
-    {
-      return cachedResponse;
-    }
+    if (cachedResponse != null) return cachedResponse;
 
     var totalItems = query.AuthorId.HasValue
         ? await queryRepository.CountByAuthorAsync(query.AuthorId.Value, cancellationToken)

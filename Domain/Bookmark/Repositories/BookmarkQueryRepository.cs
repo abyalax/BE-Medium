@@ -1,4 +1,5 @@
 using Medium.Api.Domain.Bookmark.Dtos;
+using Medium.Api.Domain.Bookmark.Mapper;
 using Medium.Api.Infrastructure.Database;
 
 using Microsoft.EntityFrameworkCore;
@@ -52,20 +53,13 @@ public class BookmarkQueryRepository(ApplicationDbContext context)
         .AnyAsync(b => b.UserId == userId && b.ArticleId == articleId, cancellationToken);
   }
 
-  public async Task<BookmarkWithArticleData?> GetBookmarkWithArticleAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<BookmarkDto?> GetBookmarkWithArticleAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await context.Bookmarks.AsNoTracking()
         .Include(b => b.Article)
         .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
 
     if (bookmark == null) return null;
-
-    return new BookmarkWithArticleData(
-        bookmark.Id,
-        bookmark.UserId,
-        bookmark.ArticleId,
-        bookmark.Article.Title,
-        bookmark.Article.Slug,
-        bookmark.CreatedAt);
+    return BookmarkMapper.ToResponse(bookmark);
   }
 }

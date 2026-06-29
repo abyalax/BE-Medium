@@ -66,10 +66,7 @@ public class TagService(TagStoreRepository tagStoreRepository, TagQueryRepositor
     var cacheKey = $"tags:list:{page}:{pageSize}";
     var cachedResponse = await _redisService.GetAsync<PagedTagDto>(cacheKey, cancellationToken);
 
-    if (cachedResponse != null)
-    {
-      return cachedResponse;
-    }
+    if (cachedResponse != null) return cachedResponse;
 
     var totalItems = await _tagQueryRepository.CountAsync(cancellationToken);
     var items = await _tagQueryRepository.ListAsync(page, pageSize, cancellationToken);

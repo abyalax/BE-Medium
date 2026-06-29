@@ -3,6 +3,4 @@ using Medium.Api.Infrastructure.Pagination;
 
 namespace Medium.Api.Domain.Article.Queries;
 
-public record SearchArticlesQuery(
-  string SearchTerm
-) : PagedQuery<PaginationModel<ArticleDto>>;
+public record SearchArticlesQuery() : PagedQuery<PaginationModel<ArticleDto>>;

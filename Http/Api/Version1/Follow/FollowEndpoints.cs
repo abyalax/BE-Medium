@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 using Medium.Api.Domain.Follow.Dtos;
 using Medium.Api.Domain.Follow.Services;
-using Medium.Api.Infrastructure.Auth;
+using Medium.Api.Common.Constant;
 using Medium.Api.Infrastructure.Filters;
 using Medium.Api.Infrastructure.Http;
 
