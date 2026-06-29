@@ -5,11 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using NATS.Client.Core;
-
 namespace Medium.Api.Infrastructure.Lifecycle;
 
-public class ApplicationLifecycleService : IHostedService, IAsyncDisposable
+public class ApplicationLifecycleService : IHostedService, IDisposable
 {
   private readonly IServiceProvider _serviceProvider;
   private readonly ILogger<ApplicationLifecycleService> _logger;
@@ -45,9 +43,18 @@ public class ApplicationLifecycleService : IHostedService, IAsyncDisposable
       // Create application module once infrastructure is ready
       _module = _scope.ServiceProvider.GetRequiredService<ApplicationModule>();
 
-      // Initialize JetStream streams
-      var natsConnection = _scope.ServiceProvider.GetRequiredService<NatsConnection>();
-      await JetStreamInitializer.InitializeJetStreamAsync(natsConnection, _logger);
+      // Initialize JetStream streams and consumers (optional)
+      var natsConnectionProvider = _scope.ServiceProvider.GetRequiredService<INatsConnectionProvider>();
+      try
+      {
+        await JetStreamInitializer.InitializeJetStreamAsync(natsConnectionProvider, _logger, cancellationToken);
+        await JetStreamInitializer.InitializeConsumersAsync(natsConnectionProvider, _logger, cancellationToken);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "JetStream initialization failed. The application will continue without JetStream functionality.");
+        _logger.LogWarning("To enable JetStream, ensure NATS server is started with -js flag");
+      }
 
       _logger.LogInformation("[OnStartup] ✓ Application is ready and running");
     }
@@ -64,8 +71,15 @@ public class ApplicationLifecycleService : IHostedService, IAsyncDisposable
 
     if (_module != null)
     {
-      await _module.DisposeAsync();
+      _module.Dispose();
       _module = null;
+    }
+
+    // Shutdown NATS connection
+    var natsLifecycle = _scope?.ServiceProvider.GetRequiredService<INatsLifecycle>();
+    if (natsLifecycle != null)
+    {
+      await natsLifecycle.ShutdownAsync(cancellationToken);
     }
 
     _scope?.Dispose();
@@ -74,11 +88,11 @@ public class ApplicationLifecycleService : IHostedService, IAsyncDisposable
     _logger.LogInformation("[OnShutdown] ✓ Application stopped cleanly");
   }
 
-  public async ValueTask DisposeAsync()
+  public void Dispose()
   {
     if (_module != null)
     {
-      await _module.DisposeAsync();
+      _module.Dispose();
       _module = null;
     }
     _scope?.Dispose();

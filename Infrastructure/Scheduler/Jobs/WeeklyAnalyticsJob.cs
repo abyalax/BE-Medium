@@ -1,11 +1,13 @@
 using Coravel.Invocable;
 
+using MediatR;
+
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Domain.Comment.Repositories;
 using Medium.Api.Domain.Follow.Repositories;
-using Medium.Api.Domain.Notification.Dtos;
-using Medium.Api.Domain.Notification.Services;
+using Medium.Api.Domain.Notification.Commands;
 using Medium.Api.Domain.User.Repositories;
+using Medium.Api.Enums;
 using Medium.Api.Infrastructure.Email.Models;
 using Medium.Api.Infrastructure.Email.Services;
 
@@ -16,38 +18,30 @@ public class WeeklyAnalyticsJob(
     ArticleQueryRepository articleQueryRepository,
     CommentQueryRepository commentQueryRepository,
     UserQueryRepository userQueryRepository,
-    NotificationService notificationService,
+    IMediator mediator,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
+    IHostApplicationLifetime appLifetime,
     ILogger<WeeklyAnalyticsJob> logger
-  ) : IInvocable
+) : IInvocable
 {
-  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
-  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
-  private readonly CommentQueryRepository _commentQueryRepository = commentQueryRepository;
-  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
-  private readonly NotificationService _notificationService = notificationService;
-  private readonly MailpitEmailService _emailService = emailService;
-  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
-  private readonly ILogger<WeeklyAnalyticsJob> _logger = logger;
-
   public async Task Invoke()
   {
+
+    var cancellationToken = appLifetime.ApplicationStopping;
+
     try
     {
-      _logger.LogInformation("WeeklyAnalyticsJob running at {Time}", DateTime.UtcNow);
+      logger.LogInformation("WeeklyAnalyticsJob running at {Time}", DateTime.UtcNow);
 
       // Calculate weekly statistics
       var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
-
       // Get total user count (approximate by counting follows)
-      var totalFollows = await _followQueryRepository.GetTotalFollowsCountAsync(default);
-
+      var totalFollows = await followQueryRepository.GetTotalFollowsCountAsync(cancellationToken);
       // Get new articles this week
-      var newArticlesCount = await _articleQueryRepository.GetArticlesCountSinceAsync(oneWeekAgo, default);
-
+      var newArticlesCount = await articleQueryRepository.GetArticlesCountSinceAsync(oneWeekAgo, cancellationToken);
       // Get new comments this week
-      var newCommentsCount = await _commentQueryRepository.GetCommentsCountSinceAsync(oneWeekAgo, default);
+      var newCommentsCount = await commentQueryRepository.GetCommentsCountSinceAsync(oneWeekAgo, cancellationToken);
 
       var weeklyStats = new Dictionary<string, object>
       {
@@ -58,59 +52,86 @@ public class WeeklyAnalyticsJob(
         ["calculatedAt"] = DateTime.UtcNow
       };
 
-      _logger.LogInformation("WeeklyAnalyticsJob completed. Stats: {@Stats}", weeklyStats);
+      logger.LogInformation("WeeklyAnalyticsJob completed calculation. Stats: {@Stats}", weeklyStats);
 
-      // Save analytics as notification for admins (in real app, would save to analytics table)
-      var adminUsers = await _userQueryRepository.ListAsync(1, 10, default);
-      foreach (var admin in adminUsers)
+      var adminUsers = await userQueryRepository.ListAsync(1, 10, cancellationToken);
+      if (adminUsers == null || adminUsers.Count == 0)
       {
-        await _notificationService.CreateAsync(new CreateNotificationRequest(
-            admin.Id.ToString(),
-            "Weekly Analytics Report",
-            $"This week: {newArticlesCount} new articles, {newCommentsCount} new comments, {totalFollows} total follows",
-            NotificationType.ArticlePublished, // Reusing existing type
-            null,
-            "/analytics"
-        ), default);
+        logger.LogWarning("No admin users found to receive the weekly report.");
+        return;
       }
 
-      // Send analytics report to admins via email
-      var weekStart = oneWeekAgo.ToString("MMM dd, yyyy");
-      var weekEnd = DateTime.UtcNow.ToString("MMM dd, yyyy");
+      var notificationCommands = new List<CreateNotificationCommand>();
+      var messageContent = $"This week: {newArticlesCount} new articles, {newCommentsCount} new comments, {totalFollows} total follows";
 
-      var topArticles = await _articleQueryRepository.GetPublishedAsync(1, 5, default);
-      var topArticleItems = new List<NewsletterArticleItem>();
-
-      foreach (var article in topArticles)
+      foreach (var admin in adminUsers)
       {
-        topArticleItems.Add(new NewsletterArticleItem(
-            article.Title,
-            article.Author.Name,
-            $"/articles/{article.Id}"
+        notificationCommands.Add(new CreateNotificationCommand(
+            admin.Id,
+            "Weekly Analytics Report",
+            messageContent,
+            NotificationType.ArticlePublished,
+            null,
+            "/analytics"
         ));
       }
 
-      foreach (var admin in adminUsers)
+      if (notificationCommands.Count != 0)
       {
-        var emailModel = new NewsletterEmailModel(
-            weekStart,
-            weekEnd,
-            newArticlesCount,
-            newCommentsCount,
-            totalFollows,
-            topArticleItems,
-            "https://medium-clone.com"
-        );
-
-        var emailHtml = await _emailTemplateService.RenderTemplateAsync("NewsletterEmail", emailModel);
-        await _emailService.SendAsync(admin.Email, "Weekly Analytics Report", emailHtml, default);
-
-        _logger.LogInformation("Analytics report sent to admin {AdminEmail}", admin.Email);
+        var bulkNotificationCommand = new CreateRangeNotificationCommand(notificationCommands);
+        await mediator.Send(bulkNotificationCommand, cancellationToken);
       }
+
+      var weekStart = oneWeekAgo.ToString("MMM dd, yyyy");
+      var weekEnd = DateTime.UtcNow.ToString("MMM dd, yyyy");
+
+      var topArticles = await articleQueryRepository.GetPublishedAsync(1, 5, cancellationToken);
+      var topArticleItems = topArticles.Select(article => new NewsletterArticleItem(
+          article.Title,
+          article.Author.Name,
+          $"/article/{article.Id}"
+      )).ToList();
+
+      var emailTasks = adminUsers.Select(async admin =>
+      {
+        try
+        {
+          var emailModel = new NewsletterEmailModel(
+                    weekStart,
+                    weekEnd,
+                    newArticlesCount,
+                    newCommentsCount,
+                    totalFollows,
+                    topArticleItems,
+                    "https://medium-clone.com"
+                );
+
+          var emailHtml = await emailTemplateService.RenderTemplateAsync("NewsletterEmail", emailModel);
+          await emailService.SendAsync(admin.Email, "Weekly Analytics Report", emailHtml, cancellationToken);
+
+          logger.LogInformation("Analytics report email successfully sent to admin: {AdminEmail}", admin.Email);
+        }
+        catch (OperationCanceledException)
+        {
+          logger.LogWarning("Email sending canceled for admin: {AdminEmail} due to application shutdown.", admin.Email);
+        }
+        catch (Exception ex)
+        {
+          logger.LogError(ex, "Failed to send analytics email to admin: {AdminEmail}", admin.Email);
+        }
+      });
+
+      await Task.WhenAll(emailTasks);
+
+      logger.LogInformation("WeeklyAnalyticsJob fully processed.");
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning("WeeklyAnalyticsJob execution was canceled gracefully due to application shutdown.");
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error in WeeklyAnalyticsJob");
+      logger.LogError(ex, "Error occurred inside WeeklyAnalyticsJob");
       throw;
     }
   }

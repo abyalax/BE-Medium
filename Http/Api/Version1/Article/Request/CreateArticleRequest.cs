@@ -15,9 +15,6 @@ public class CreateArticleRequest : AbstractValidator<CreateArticleCommand>
     RuleFor(x => x.Content)
       .NotEmpty().WithMessage("Content is required");
 
-    RuleFor(x => x.Description)
-      .NotEmpty().WithMessage("Description is required");
-
     RuleFor(x => x.CoverImageUrl)
       .Must(uri => Uri.TryCreate(uri, UriKind.Absolute, out _))
       .When(x => !string.IsNullOrEmpty(x.CoverImageUrl))

@@ -1,4 +1,3 @@
-using Medium.Api.Domain.Auth.Dtos;
 using Medium.Api.Domain.User.Dtos;
 using Medium.Api.Domain.User.Mapper;
 using Medium.Api.Infrastructure.Database;
@@ -148,5 +147,16 @@ public class UserQueryRepository(ApplicationDbContext context)
     return await context.Users
       .AsNoTracking()
       .AnyAsync(user => user.Id == id, cancellationToken);
+  }
+
+  public async Task<List<UserModel>> GetActiveSubscribersByFollowAsync(int page, int pageSize, CancellationToken cancellationToken)
+  {
+    // Filter users who have at least one record in their Following collection
+    return await context.Users
+      .AsNoTracking()
+      .Where(user => user.Following.Count != 0)
+      .Skip((page - 1) * pageSize)
+      .Take(pageSize)
+      .ToListAsync(cancellationToken);
   }
 }

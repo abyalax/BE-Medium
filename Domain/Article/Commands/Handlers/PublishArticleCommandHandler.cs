@@ -1,29 +1,21 @@
 using MediatR;
 
 using Medium.Api.Domain.Article.Dtos;
-using Medium.Api.Domain.Article.Events;
 using Medium.Api.Domain.Article.Repositories;
-using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 namespace Medium.Api.Domain.Article.Commands.Handlers;
 
-public class PublishArticleCommandHandler : IRequestHandler<PublishArticleCommand, ArticleDto>
+public class PublishArticleCommandHandler(
+  ArticleQueryRepository articleQueryRepository,
+  ArticleStoreRepository articleStoreRepository,
+  IJetStreamEventPublisher jetStreamPublisher
+) : IRequestHandler<PublishArticleCommand, ArticleDto>
 {
-  private readonly ArticleQueryRepository _articleQueryRepository;
-  private readonly ArticleStoreRepository _articleStoreRepository;
-  private readonly IEventHandlerResolver _eventHandlerResolver;
-
-  public PublishArticleCommandHandler(
-    ArticleQueryRepository articleQueryRepository,
-    ArticleStoreRepository articleStoreRepository,
-    IEventHandlerResolver eventHandlerResolver
-    )
-  {
-    _articleQueryRepository = articleQueryRepository;
-    _articleStoreRepository = articleStoreRepository;
-    _eventHandlerResolver = eventHandlerResolver;
-  }
+  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
+  private readonly ArticleStoreRepository _articleStoreRepository = articleStoreRepository;
 
   public async Task<ArticleDto> Handle(PublishArticleCommand command, CancellationToken cancellationToken)
   {
@@ -56,33 +48,23 @@ public class PublishArticleCommandHandler : IRequestHandler<PublishArticleComman
 
       await _articleStoreRepository.SaveChangesAsync(cancellationToken);
 
-      // Publish ArticlePublishedEvent
-      await _eventHandlerResolver.HandleAsync(new ArticlePublishedEvent(command.ArticleId, command.UserId, article.Title, article.Slug), cancellationToken);
+      var natsEvent = new ArticlePublishedEvent(
+        article.Id.ToString(),
+        article.AuthorId.ToString(),
+        article.Title,
+        article.PublishedAt
+      );
+
+      await jetStreamPublisher.PublishToStreamAsync(
+        NatsSubjects.ArticlePublished,
+        natsEvent,
+        cancellationToken
+      );
+
     }
 
-    var articleWithTags = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(article.Id, cancellationToken);
-    return ToResponse(articleWithTags!);
-  }
-
-  private static ArticleDto ToResponse(ArticleDto article)
-  {
-    return new ArticleDto(
-        article.Id,
-        article.AuthorId,
-        article.AuthorName,
-        article.Title,
-        article.Slug,
-        article.Content,
-        article.CoverImageUrl,
-        article.ThumbnailId,
-        null,
-        article.ContentImages,
-        article.Status,
-        article.PublishedAt,
-        article.ScheduledAt,
-        article.ViewCount,
-        article.Tags,
-        article.CreatedAt,
-        article.UpdatedAt);
+    var articleWithTags = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(article.Id, cancellationToken)
+      ?? throw new NotFoundException("Article not found");
+    return articleWithTags;
   }
 }

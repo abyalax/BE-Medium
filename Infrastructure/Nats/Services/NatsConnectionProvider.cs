@@ -1,53 +1,40 @@
 using Medium.Api.Infrastructure.Interface;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
 using NATS.Client.Core;
 
 namespace Medium.Api.Infrastructure.Nats.Services;
 
-public interface INatsConnectionProvider
+public interface INatsConnectionProvider : INatsLifecycle
 {
   NatsConnection Connection { get; }
 }
 
-public class NatsConnectionProvider : INatsConnectionProvider, INatsLifecycle
+public class NatsConnectionProvider(IConfiguration configuration, ILogger<NatsConnectionProvider> logger) : INatsConnectionProvider
 {
-  private readonly IConfiguration _configuration;
-  private readonly ILogger<NatsConnectionProvider> _logger;
   private NatsConnection? _connection;
 
-  public NatsConnectionProvider(IConfiguration configuration, ILogger<NatsConnectionProvider> logger)
-  {
-    _configuration = configuration;
-    _logger = logger;
-  }
-
-  public NatsConnection Connection => _connection ?? throw new InvalidOperationException("NATS is not connected. Call InitializeAsync first.");
+  public NatsConnection Connection => _connection ?? throw new InvalidOperationException("NATS connection has not been initialized.");
 
   public async Task InitializeAsync(CancellationToken cancellationToken = default)
   {
-    var url = _configuration["Nats:Url"] ?? "nats://localhost:4222";
-    _logger.LogInformation("Connecting to NATS at {Url}...", url);
+    var url = configuration["Nats:Url"] ?? throw new InvalidOperationException("Nats URL is required");
+    logger.LogInformation("Connecting to NATS at {Url}...", url);
 
     var opts = NatsOpts.Default with { Url = url };
     _connection = new NatsConnection(opts);
 
-    // Ensure connection is established
     await _connection.ConnectAsync();
-
-    _logger.LogInformation("✓ Connected to NATS");
+    logger.LogInformation("✓ Connected to NATS");
   }
 
   public async Task ShutdownAsync(CancellationToken cancellationToken = default)
   {
     if (_connection != null)
     {
-      _logger.LogInformation("Disconnecting from NATS...");
+      logger.LogInformation("Disconnecting from NATS...");
       await _connection.DisposeAsync();
       _connection = null;
-      _logger.LogInformation("✗ Disconnected from NATS");
+      logger.LogInformation("✗ Disconnected from NATS");
     }
   }
 }

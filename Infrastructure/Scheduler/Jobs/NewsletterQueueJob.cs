@@ -6,7 +6,9 @@ using Medium.Api.Domain.Follow.Repositories;
 using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Email.Models;
 using Medium.Api.Infrastructure.Email.Services;
-using Medium.Api.Infrastructure.Nats.Services;
+using Medium.Api.Infrastructure.Settings;
+
+using Microsoft.Extensions.Options;
 
 namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 
@@ -15,76 +17,124 @@ public class NewsletterQueueJob(
     ArticleQueryRepository articleQueryRepository,
     FollowQueryRepository followQueryRepository,
     UserQueryRepository userQueryRepository,
-    INatsPublisher publisher,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
+    IOptions<AppSettings> appSettingsOptions,
+    IHostApplicationLifetime appLifetime,
     ILogger<NewsletterQueueJob> logger) : IInvocable
 {
-  private readonly CommentQueryRepository _commentQueryRepository = commentQueryRepository;
-  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
-  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
-  private readonly UserQueryRepository _userQueryRepository = userQueryRepository;
-  private readonly INatsPublisher _publisher = publisher;
-  private readonly MailpitEmailService _emailService = emailService;
-  private readonly EmailTemplateService _emailTemplateService = emailTemplateService;
-  private readonly ILogger<NewsletterQueueJob> _logger = logger;
-
   public async Task Invoke()
   {
+    // Extract native background cancel token for graceful handling
+    var cancellationToken = appLifetime.ApplicationStopping;
     try
     {
-      _logger.LogInformation("NewsletterQueueJob running at {Time}", DateTime.UtcNow);
+      logger.LogInformation("NewsletterQueueJob running at {Time}", DateTime.UtcNow);
 
-      // Calculate week date range
+      // Fetch app settings securely via DI Options pattern
+      var appSettings = appSettingsOptions.Value;
+      var baseUrl = appSettings.Config.BaseUrl;
+      // Calculate current week date boundaries
       var now = DateTime.UtcNow;
       var weekStart = now.AddDays(-(int)now.DayOfWeek);
       var weekEnd = weekStart.AddDays(6);
 
-      // Get weekly statistics
-      var newArticlesCount = await _articleQueryRepository.GetArticlesCountSinceAsync(weekStart, default);
-      var newCommentsCount = await _commentQueryRepository.GetCommentsCountSinceAsync(weekStart, default);
-      var newFollowersCount = await _followQueryRepository.GetTotalFollowsCountAsync(default);
+      // Gather weekly activity statistics asynchronously
+      var newArticlesCount = await articleQueryRepository.GetArticlesCountSinceAsync(weekStart, cancellationToken);
+      var newCommentsCount = await commentQueryRepository.GetCommentsCountSinceAsync(weekStart, cancellationToken);
+      var newFollowersCount = await followQueryRepository.GetTotalFollowsCountAsync(cancellationToken);
 
-      // Get top articles this week
-      var topArticles = await _articleQueryRepository.GetPublishedAsync(1, 5, default);
-      var topArticleItems = new List<NewsletterArticleItem>();
+      // Retrieve top weekly published articles
+      var topArticles = await articleQueryRepository.GetPublishedAsync(1, 5, cancellationToken);
+      var topArticleItems = topArticles.Select(article => new NewsletterArticleItem(
+          article.Title,
+          article.Author.Name,
+          $"{baseUrl}/article/{article.Id}"
+      )).ToList();
 
-      foreach (var article in topArticles)
+      var weekStartString = weekStart.ToString("MMM dd, yyyy");
+      var weekEndString = weekEnd.ToString("MMM dd, yyyy");
+
+      // Define pagination controls
+      int currentPage = 1;
+      const int pageSize = 100;
+      bool hasMoreUsers = true;
+      int totalDispatched = 0;
+
+      // Loop through all database records sequentially using a safe chunking window
+      while (hasMoreUsers)
       {
-        topArticleItems.Add(new NewsletterArticleItem(
-            article.Title,
-            article.Author.Name,
-            $"/articles/{article.Id}"
-        ));
+        // Ensure the loop breaks immediately if application is shutting down
+        cancellationToken.ThrowIfCancellationRequested();
+
+        logger.LogInformation("Fetching subscriber batch (based on Follow structure) from database: Page {Page}", currentPage);
+
+        // Fetch only users who follow at least one author using the new repository logic
+        var subscribers = await userQueryRepository.GetActiveSubscribersByFollowAsync(currentPage, pageSize, cancellationToken);
+
+        if (subscribers == null || subscribers.Count == 0)
+        {
+          // Exit the loop when no more records are returned from database
+          hasMoreUsers = false;
+          break;
+        }
+
+        // Build concurrent email tasks for the current chunk list
+        var emailTasks = subscribers.Select(async user =>
+        {
+          try
+          {
+            // Build customized contextual newsletter template parameters for the recipient
+            var emailModel = new NewsletterEmailModel(
+                        weekStartString,
+                        weekEndString,
+                        newArticlesCount,
+                        newCommentsCount,
+                        newFollowersCount,
+                        topArticleItems,
+                        baseUrl
+                    );
+
+            var emailHtml = await emailTemplateService.RenderTemplateAsync("NewsletterEmail", emailModel);
+            await emailService.SendAsync(user.Email, "Weekly Newsletter", emailHtml, cancellationToken);
+
+            // Safely increment counter across multiple parallel threads
+            Interlocked.Increment(ref totalDispatched);
+          }
+          catch (OperationCanceledException)
+          {
+            logger.LogWarning("Newsletter transmission aborted for {UserEmail} due to host service shutdown.", user.Email);
+          }
+          catch (Exception ex)
+          {
+            logger.LogError(ex, "Failed to compile or route weekly newsletter email to user {UserEmail}", user.Email);
+          }
+        });
+
+        // Execute current batch concurrently before moving to the next database page
+        await Task.WhenAll(emailTasks);
+
+        // If the returned batch is smaller than requested pageSize, it means we have reached the end of the table
+        if (subscribers.Count < pageSize)
+        {
+          hasMoreUsers = false;
+        }
+        else
+        {
+          // Move target pointer to the next database slice segment
+          currentPage++;
+        }
       }
 
-      // Get all users for newsletter (TODO: would only get subscribers)
-      var users = await _userQueryRepository.ListAsync(1, 100, default);
-
-      foreach (var user in users)
-      {
-        // Create newsletter email model
-        var emailModel = new NewsletterEmailModel(
-            weekStart.ToString("MMM dd, yyyy"),
-            weekEnd.ToString("MMM dd, yyyy"),
-            newArticlesCount,
-            newCommentsCount,
-            newFollowersCount,
-            topArticleItems,
-            "https://medium-clone.com" // TODO: change to real url apps
-        );
-
-        var emailHtml = await _emailTemplateService.RenderTemplateAsync("NewsletterEmail", emailModel);
-        await _emailService.SendAsync(user.Email, "Weekly Newsletter", emailHtml, default);
-
-        _logger.LogInformation("Newsletter sent to {UserEmail}", user.Email);
-      }
-
-      _logger.LogInformation("NewsletterQueueJob completed. Sent {Count} newsletters", users.Count);
+      logger.LogInformation("NewsletterQueueJob completed successfully. Total dispatched to {Count} followers across all pages.", totalDispatched);
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning("NewsletterQueueJob execution was interrupted and cancelled gracefully.");
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error in NewsletterQueueJob");
+      logger.LogError(ex, "Fatal crash occurred inside NewsletterQueueJob process execution context.");
       throw;
     }
   }

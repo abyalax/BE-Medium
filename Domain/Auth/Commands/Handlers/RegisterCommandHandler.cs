@@ -1,13 +1,11 @@
 using MediatR;
 
 using Medium.Api.Domain.Auth.Dtos;
-using Medium.Api.Domain.Auth.Events;
 using Medium.Api.Domain.User.Dtos;
 using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
-using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
 
 using DomainUserRegisteredEvent = Medium.Api.Domain.Auth.Events.UserRegisteredEvent;
@@ -28,12 +26,11 @@ public class RegisterCommandHandler(
     IJetStreamEventPublisher jsPublisher,
     INatsPublisher natsPublisher,
     ILogger<RegisterCommandHandler> logger
-  ) : IRequestHandler<RegisterCommand, AuthDto>
+) : IRequestHandler<RegisterCommand, AuthDto>
 {
   public async Task<AuthDto> Handle(RegisterCommand command, CancellationToken cancellationToken)
   {
     var existingUser = await userQueryRepository.FindByEmailAsync(command.Email, cancellationToken);
-
     if (existingUser != null)
     {
       throw new ConflictException("User with this email already exists");
@@ -54,7 +51,6 @@ public class RegisterCommandHandler(
     await userStoreRepository.AddAsync(user, cancellationToken);
 
     var defaultRole = await userQueryRepository.GetRoleByNameAsync("Reader", cancellationToken);
-
     if (defaultRole != null)
     {
       await userStoreRepository.AddUserRoleAsync(new UserRoleModel
@@ -83,28 +79,27 @@ public class RegisterCommandHandler(
         user.AvatarUrl
     );
 
-    // Publish event to legacy event handler
+    // Publish event to legacy internal event handler
     await eventHandlerResolver.HandleAsync(new DomainUserRegisteredEvent(user.Id, user.Email, user.Name), cancellationToken);
 
-    // Publish to JetStream
+    // Publish user registered event to NATS JetStream
     var natsEvent = new NatsUserRegisteredEvent(user.Id, user.Email, user.Name);
-    await jsPublisher.PublishToStreamAsync("USER_EVENTS", "user.registered", natsEvent);
+    await jsPublisher.PublishToStreamAsync("user.registered", natsEvent, cancellationToken);
 
-    // Request-Reply: Send welcome email
+    // Send welcome email via request-reply pattern
     var emailRequest = new NatsSendWelcomeEmailRequest(user.Id, user.Email, user.Name);
     try
     {
-      var emailResponse = await natsPublisher.RequestAsync<NatsSendWelcomeEmailRequest, NatsSendWelcomeEmailResponse>("email.send-welcome", emailRequest);
+      var emailResponse = await natsPublisher.RequestAsync<NatsSendWelcomeEmailRequest, NatsSendWelcomeEmailResponse>("email.send-welcome", emailRequest, cancellationToken);
 
-      if (!emailResponse.Success)
+      if (emailResponse == null || !emailResponse.Success)
       {
-        // Log error but don't fail registration
-        logger.LogWarning($"EmailSendFailed", emailResponse.Message);
+        logger.LogWarning("Email sending failed or returned null response: {Message}", emailResponse?.Message ?? "No response body");
       }
     }
     catch (Exception ex)
     {
-      logger.LogWarning(ex.ToString());
+      logger.LogWarning(ex, "Failed to complete request-reply welcome email sequence for user {UserId}", user.Id);
     }
 
     return response;
@@ -127,7 +122,7 @@ public class RegisterCommandHandler(
           break;
 
         default:
-          throw new ArgumentException("Invalid user DTO type");
+          throw new ArgumentException("Invalid user DTO type mapping.");
       }
     }
 

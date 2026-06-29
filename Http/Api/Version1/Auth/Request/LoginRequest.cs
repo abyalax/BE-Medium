@@ -2,7 +2,7 @@ using FluentValidation;
 
 using Medium.Api.Domain.Auth.Commands;
 
-namespace Medium.Api.Domain.Auth.Validators;
+namespace Medium.Api.Http.Api.Version1.Auth.Request;
 
 public class LoginRequest : AbstractValidator<LoginCommand>
 {

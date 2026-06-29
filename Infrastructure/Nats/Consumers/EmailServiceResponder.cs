@@ -1,6 +1,7 @@
 using System.Text.Json;
 
-using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Domain.Auth.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,22 +12,37 @@ namespace Medium.Api.Infrastructure.Nats.Consumers;
 
 public class EmailServiceResponder : BackgroundService
 {
-  private readonly NatsConnection _nats;
+  private readonly INatsConnectionProvider _connectionProvider;
   private readonly ILogger<EmailServiceResponder> _logger;
 
   public EmailServiceResponder(
-      NatsConnection nats,
+      INatsConnectionProvider connectionProvider,
       ILogger<EmailServiceResponder> logger)
   {
-    _nats = nats;
+    _connectionProvider = connectionProvider;
     _logger = logger;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    // Wait for NATS connection to be ready
+    while (!stoppingToken.IsCancellationRequested)
+    {
+      try
+      {
+        var _ = _connectionProvider.Connection;
+        break;
+      }
+      catch (InvalidOperationException)
+      {
+        _logger.LogInformation("Waiting for NATS connection to be initialized...");
+        await Task.Delay(1000, stoppingToken);
+      }
+    }
+    
     try
     {
-      await foreach (var msg in _nats.SubscribeAsync<string>("email.send-welcome", cancellationToken: stoppingToken))
+      await foreach (var msg in _connectionProvider.Connection.SubscribeAsync<string>("email.send-welcome", cancellationToken: stoppingToken))
       {
         try
         {
@@ -42,10 +58,11 @@ public class EmailServiceResponder : BackgroundService
 
           await Task.Delay(1000, stoppingToken);
 
-          var response = new SendWelcomeEmailResponse(
-            Success: true,
-            Message: $"Welcome email sent to {request.Email}"
-          );
+          var response = new SendWelcomeEmailResponse
+          {
+            Success = true,
+            Message = $"Welcome email sent to {request.Email}"
+          };
 
           var responseJson = JsonSerializer.Serialize(response);
           await msg.ReplyAsync(responseJson, cancellationToken: stoppingToken);

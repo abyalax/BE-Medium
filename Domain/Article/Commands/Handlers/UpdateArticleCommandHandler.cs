@@ -1,10 +1,10 @@
 using MediatR;
 
 using Medium.Api.Domain.Article.Dtos;
-using Medium.Api.Domain.Article.Events;
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
 
 namespace Medium.Api.Domain.Article.Commands.Handlers;
 
@@ -60,7 +60,14 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
     await _articleStoreRepository.SaveChangesAsync(cancellationToken);
 
     // Publish ArticleUpdatedEvent
-    await _eventHandlerResolver.HandleAsync(new ArticleUpdatedEvent(command.ArticleId, command.UserId, command.Title ?? "Updated"), cancellationToken);
+    await _eventHandlerResolver.HandleAsync(
+      new ArticleUpdatedEvent(
+        command.ArticleId.ToString(),
+        command.UserId.ToString(),
+        command.Title ?? "Updated"
+      ),
+      cancellationToken
+    );
 
     var articleWithTags = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(article.Id, cancellationToken);
     return ToResponse(articleWithTags!);

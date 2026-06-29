@@ -23,6 +23,7 @@ public static class CacheModule
     services.AddSingleton(redisConfig);
     services.AddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();
     services.AddSingleton<IInfrastructureLifecycle>(sp => (RedisConnectionProvider)sp.GetRequiredService<IRedisConnectionProvider>());
+    services.AddSingleton<ICacheLifecycle>(sp => (RedisConnectionProvider)sp.GetRequiredService<IRedisConnectionProvider>());
     services.AddSingleton<IConnectionMultiplexer>(sp => sp.GetRequiredService<IRedisConnectionProvider>().Connection);
     services.AddScoped<RedisService>();
 

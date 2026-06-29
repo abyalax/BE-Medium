@@ -23,7 +23,7 @@ public static class EmailEndpoints
            "follow.Following.Name Test",
            "@event.Title Test",
            "@event.Slug",
-           $"/articles/@event.ArticleId"
+           $"/article/@event.ArticleId"
        );
 
       var emailHtml = await emailTemplateService.RenderTemplateAsync("ArticlePublishedEmail", emailModel);

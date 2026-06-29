@@ -9,6 +9,13 @@ public class AppSettings
   public RedisSettings Redis { get; set; } = new();
   public PaginationSettings Pagination { get; set; } = new();
   public StorageSettings Storage { get; set; } = new();
+
+  public required ConfigSettings Config { get; set; }
+}
+
+public class ConfigSettings
+{
+  public required string BaseUrl { get; set; }
 }
 
 public class JwtSettings

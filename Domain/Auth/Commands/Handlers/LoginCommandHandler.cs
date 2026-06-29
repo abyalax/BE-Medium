@@ -6,10 +6,8 @@ using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
-using Medium.Api.Infrastructure.Nats.Services;
 
 using DomainUserLoggedInEvent = Medium.Api.Domain.Auth.Events.UserLoggedInEvent;
-using NatsUserLoggedInEvent = Medium.Api.Infrastructure.Nats.Events.UserLoggedInEvent;
 
 namespace Medium.Api.Domain.Auth.Commands.Handlers;
 
@@ -17,8 +15,7 @@ public class LoginCommandHandler(
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
     UserQueryRepository userQueryRepository,
-    IEventHandlerResolver eventHandlerResolver,
-    IJetStreamEventPublisher jsPublisher
+    IEventHandlerResolver eventHandlerResolver
   ) : IRequestHandler<LoginCommand, AuthDto>
 {
   public async Task<AuthDto> Handle(LoginCommand command, CancellationToken cancellationToken)
@@ -42,33 +39,15 @@ public class LoginCommandHandler(
 
     await eventHandlerResolver.HandleAsync(new DomainUserLoggedInEvent(user.Id, user.Email), cancellationToken);
 
-    var natsEvent = new NatsUserLoggedInEvent(user.Id, user.Email, DateTime.UtcNow);
-    await jsPublisher.PublishToStreamAsync("USER_EVENTS", "user.logged-in", natsEvent);
-
     return response;
   }
 
-  private static IEnumerable<string> GetPermissions(IReadOnlyCollection<object> users)
+  // Ganti 'RoleDto' dengan nama class tipe data dari user.Roles kamu (misal: Role, RoleDto, dll.)
+  private static IEnumerable<string> GetPermissions(IReadOnlyCollection<RoleWithPermissionsDto> roles)
   {
-    var permissions = new List<string>();
-
-    foreach (var user in users)
-    {
-      switch (user)
-      {
-        case UserDto u:
-          permissions.AddRange(u.Roles.SelectMany(r => r.Permissions).Select(p => p.Code));
-          break;
-
-        case UserWithPasswordDto u:
-          permissions.AddRange(u.Roles.SelectMany(r => r.Permissions).Select(p => p.Code));
-          break;
-
-        default:
-          throw new ArgumentException("Invalid user DTO type");
-      }
-    }
-
-    return permissions.Distinct(StringComparer.OrdinalIgnoreCase);
+    return roles
+        .SelectMany(r => r.Permissions)
+        .Select(p => p.Code)
+        .Distinct(StringComparer.OrdinalIgnoreCase);
   }
 }

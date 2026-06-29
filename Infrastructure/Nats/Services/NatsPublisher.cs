@@ -1,60 +1,56 @@
 using System.Text.Json;
 
-using Microsoft.Extensions.Logging;
-
-using NATS.Client.Core;
 using NATS.Client.JetStream;
 
 namespace Medium.Api.Infrastructure.Nats.Services;
 
 public interface INatsPublisher
 {
-  Task PublishAsync<T>(string subject, T @event) where T : class;
-  Task<TResponse> RequestAsync<TRequest, TResponse>(string subject, TRequest request)
-      where TRequest : class where TResponse : class;
+  Task PublishAsync<T>(string subject, T @event, CancellationToken cancellationToken = default) where T : class;
+  Task<TResponse> RequestAsync<TRequest, TResponse>(string subject, TRequest request, CancellationToken cancellationToken = default)
+    where TRequest : class
+    where TResponse : class;
 }
 
-public class NatsPublisher(NatsConnection connection, ILogger<NatsPublisher> logger) : INatsPublisher
+public class NatsPublisher(INatsConnectionProvider connectionProvider, ILogger<NatsPublisher> logger) : INatsPublisher
 {
-  private readonly NatsConnection _connection = connection;
-  private readonly ILogger<NatsPublisher> _logger = logger;
-
-  public async Task PublishAsync<T>(string subject, T @event) where T : class
+  public async Task PublishAsync<T>(string subject, T @event, CancellationToken cancellationToken = default) where T : class
   {
     try
     {
-      var json = JsonSerializer.Serialize(@event);
-      await _connection.PublishAsync(subject, json);
-      _logger.LogInformation("Published to {Subject}: {Json}", subject, json);
+      await connectionProvider.Connection.PublishAsync(subject, @event, cancellationToken: cancellationToken);
+      logger.LogInformation("Published to {Subject}", subject);
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error publishing to {Subject}", subject);
+      logger.LogError(ex, "Error publishing to {Subject}", subject);
       throw;
     }
   }
 
-  public async Task<TResponse> RequestAsync<TRequest, TResponse>(string subject, TRequest request)
-      where TRequest : class where TResponse : class
+  public async Task<TResponse> RequestAsync<TRequest, TResponse>(string subject, TRequest request, CancellationToken cancellationToken = default)
+    where TRequest : class
+    where TResponse : class
   {
     try
     {
-      var json = JsonSerializer.Serialize(request);
-      var reply = await _connection.RequestAsync<string, string>(subject, json);
-      var replyData = reply.Data;
+      var jsonPayload = JsonSerializer.Serialize(request);
+      logger.LogInformation("Sending request on subject {Subject}", subject);
 
-      if (string.IsNullOrEmpty(replyData))
-        throw new InvalidOperationException($"Empty reply received for request on subject {subject}");
+      var replyMessage = await connectionProvider.Connection.RequestAsync<string, string>(subject, jsonPayload, cancellationToken: cancellationToken);
 
-      var response = JsonSerializer.Deserialize<TResponse>(replyData)
-                  ?? throw new InvalidOperationException($"Failed to deserialize reply response for subject {subject}");
+      if (string.IsNullOrEmpty(replyMessage.Data))
+        throw new InvalidOperationException($"Received empty or null reply response from subject {subject}");
 
-      _logger.LogInformation("Request-Reply completed on {Subject}", subject);
+      var response = JsonSerializer.Deserialize<TResponse>(replyMessage.Data)
+        ?? throw new InvalidOperationException($"Failed to deserialize reply response for subject {subject}");
+
+      logger.LogInformation("Reply received successfully for request on subject {Subject}", subject);
       return response;
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Failed request-reply on {Subject}", subject);
+      logger.LogError(ex, "Failed request-reply sequence on subject {Subject}", subject);
       throw;
     }
   }
@@ -62,26 +58,22 @@ public class NatsPublisher(NatsConnection connection, ILogger<NatsPublisher> log
 
 public interface IJetStreamEventPublisher
 {
-  Task PublishToStreamAsync<T>(string streamName, string subject, T @event) where T : class;
+  Task PublishToStreamAsync<T>(string subject, T @event, CancellationToken cancellationToken = default) where T : class;
 }
 
-public class JetStreamEventPublisher(NatsConnection connection, ILogger<JetStreamEventPublisher> logger) : IJetStreamEventPublisher
+public class JetStreamEventPublisher(INatsConnectionProvider connectionProvider, ILogger<JetStreamEventPublisher> logger) : IJetStreamEventPublisher
 {
-  private readonly NatsConnection _connection = connection;
-  private readonly ILogger<JetStreamEventPublisher> _logger = logger;
-
-  public async Task PublishToStreamAsync<T>(string streamName, string subject, T @event) where T : class
+  public async Task PublishToStreamAsync<T>(string subject, T @event, CancellationToken cancellationToken = default) where T : class
   {
     try
     {
-      var js = new NatsJSContext(_connection);
-      var json = JsonSerializer.Serialize(@event);
-      await js.PublishAsync(subject, json);
-      _logger.LogInformation("Event published to JetStream {StreamName}: {Subject} -> {Json}", streamName, subject, json);
+      var js = new NatsJSContext(connectionProvider.Connection);
+      await js.PublishAsync(subject, @event, cancellationToken: cancellationToken);
+      logger.LogInformation("Event published to JetStream on subject {Subject}", subject);
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Failed to publish to JetStream stream {StreamName} on subject {Subject}", streamName, subject);
+      logger.LogError(ex, "Failed to publish to JetStream on subject {Subject}", subject);
       throw;
     }
   }

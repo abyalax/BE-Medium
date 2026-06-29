@@ -1,10 +1,10 @@
 using MediatR;
 
 using Medium.Api.Domain.Article.Dtos;
-using Medium.Api.Domain.Article.Events;
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
+using Medium.Api.Infrastructure.Nats.Events;
 
 using ArticleModel = Medium.Api.Models.Article;
 
@@ -57,7 +57,12 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
       await _articleStoreRepository.SaveChangesAsync(cancellationToken);
     }
 
-    await _eventHandlerResolver.HandleAsync(new ArticleCreatedEvent(article.Id, command.AuthorId, command.Title, slug), cancellationToken);
+    await _eventHandlerResolver.HandleAsync(new ArticleCreatedEvent(
+      article.Id.ToString(),
+      command.AuthorId.ToString(),
+      command.Title,
+      slug
+    ), cancellationToken);
 
     var articleWithTags = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(article.Id, cancellationToken)
       ?? throw new NotFoundException("Article not found");

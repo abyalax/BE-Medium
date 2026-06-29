@@ -1,52 +1,87 @@
 using System.Text.Json;
 
-using Microsoft.Extensions.Logging;
-
 using NATS.Client.Core;
 
 namespace Medium.Api.Infrastructure.Nats.Services;
 
 public interface INatsSubscriber
 {
-  Task SubscribeAsync<T>(string subject, Func<T, Task> handler) where T : class;
+  Task SubscribeAsync<T>(string subject, Func<T, Task> handler, CancellationToken cancellationToken = default) where T : class;
+  Task SubscribeToRequestAsync<TRequest, TResponse>(string subject, Func<TRequest, Task<TResponse>> handler, CancellationToken cancellationToken = default)
+    where TRequest : class
+    where TResponse : class;
 }
 
-public class NatsSubscriber(NatsConnection connection, ILogger<NatsSubscriber> logger) : INatsSubscriber
+public class NatsSubscriber(INatsConnectionProvider connectionProvider, ILogger<NatsSubscriber> logger) : INatsSubscriber
 {
-  private readonly NatsConnection _connection = connection;
+  private readonly INatsConnectionProvider _connectionProvider = connectionProvider;
   private readonly ILogger<NatsSubscriber> _logger = logger;
 
-  public Task SubscribeAsync<T>(string subject, Func<T, Task> handler) where T : class
+  public async Task SubscribeAsync<T>(string subject, Func<T, Task> handler, CancellationToken cancellationToken = default) where T : class
   {
-    _ = Task.Run(async () =>
+    try
     {
-      try
+      await foreach (var msg in _connectionProvider.Connection.SubscribeAsync<T>(subject, cancellationToken: cancellationToken))
       {
-        await foreach (var msg in _connection.SubscribeAsync<string>(subject))
+        try
         {
-          try
+          if (msg.Data != null)
           {
-            if (string.IsNullOrEmpty(msg.Data)) continue;
-            var @event = JsonSerializer.Deserialize<T>(msg.Data);
-            if (@event != null)
-            {
-              await handler(@event);
-              _logger.LogInformation("Handled message from {Subject}", subject);
-            }
+            await handler(msg.Data);
+            _logger.LogInformation("Handled message from {Subject}", subject);
           }
-          catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Error handling message from {Subject}", subject);
+        }
+      }
+    }
+    catch (OperationCanceledException)
+    {
+      _logger.LogInformation("Subscription to {Subject} cancelled", subject);
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error processing subscription to {Subject}", subject);
+    }
+  }
+
+  public async Task SubscribeToRequestAsync<TRequest, TResponse>(string subject, Func<TRequest, Task<TResponse>> handler, CancellationToken cancellationToken = default)
+    where TRequest : class
+    where TResponse : class
+  {
+    try
+    {
+      await foreach (var msg in _connectionProvider.Connection.SubscribeAsync<TRequest>(subject, cancellationToken: cancellationToken))
+      {
+        try
+        {
+          if (msg.Data != null)
           {
-            _logger.LogError(ex, "Error handling message from {Subject}", subject);
+            var response = await handler(msg.Data);
+            var serialized = JsonSerializer.Serialize(response);
+            await msg.ReplyAsync(serialized);
+            _logger.LogInformation("Handled request-reply from {Subject}", subject);
+          }
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Error handling request from {Subject}", subject);
+          if (msg.ReplyTo != null)
+          {
+            await _connectionProvider.Connection.PublishAsync(msg.ReplyTo, $"{{\"error\":\"{ex.Message}\"}}");
           }
         }
       }
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Error processing subscription to {Subject}", subject);
-      }
-    });
-
-    _logger.LogInformation("Subscribed to {Subject} (background loop started)", subject);
-    return Task.CompletedTask;
+    }
+    catch (OperationCanceledException)
+    {
+      _logger.LogInformation("Request subscription to {Subject} cancelled", subject);
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error processing request subscription to {Subject}", subject);
+    }
   }
 }

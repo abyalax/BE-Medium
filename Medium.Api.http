@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "name": "John Doe",
   "email": "john.doe@example.com",
-  "password": "SecurePassword123!",
+  "password": "SecurePassword123!_",
   "bio": "Software developer",
   "avatarUrl": null
 }
@@ -20,7 +20,7 @@ Content-Type: application/json
 
 {
   "email": "john.doe@example.com",
-  "password": "SecurePassword123!"
+  "password": "SecurePassword123!_"
 }
 
 ###

@@ -6,5 +6,8 @@ public enum NotificationType
   Follow,
   ArticlePublished,
   Bookmark,
-  System
+  System,
+  CommentCreated,
+  UserFollowed,
+  Mention
 }

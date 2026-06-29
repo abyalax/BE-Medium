@@ -1,12 +1,11 @@
+using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Nats.Consumers;
+using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Handler;
 using Medium.Api.Infrastructure.Nats.Hosted;
 using Medium.Api.Infrastructure.Nats.Services;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-using NATS.Client.Core;
 
 namespace Medium.Api.Infrastructure.Nats.Module;
 
@@ -16,18 +15,26 @@ public static class NatsModule
       this IServiceCollection services,
       IConfiguration configuration)
   {
-    services.AddSingleton<NatsConnectionProvider>();
-    services.AddSingleton<INatsConnectionProvider>(sp => sp.GetRequiredService<NatsConnectionProvider>());
-    services.AddSingleton<INatsLifecycle>(sp => sp.GetRequiredService<NatsConnectionProvider>());
-    services.AddSingleton<INatsConnection>(sp => sp.GetRequiredService<NatsConnectionProvider>().Connection);
+    // Connection provider as singleton with lifecycle support
+    services.AddSingleton<INatsConnectionProvider, NatsConnectionProvider>();
+    services.AddSingleton<INatsLifecycle>(sp => sp.GetRequiredService<INatsConnectionProvider>());
 
+    // Publishers and subscribers as scoped
     services.AddScoped<INatsPublisher, NatsPublisher>();
     services.AddScoped<IJetStreamEventPublisher, JetStreamEventPublisher>();
     services.AddScoped<INatsSubscriber, NatsSubscriber>();
 
-    // TODO: re-enable when JetStream consumer API is aligned with NATS.Client.JetStream 2.x
-    // services.AddHostedService<UserRegisteredPushConsumer>();
-    // services.AddHostedService<UserLoggedInPullConsumer>();
+    // JetStream consumers as scoped
+    services.AddScoped<IJetStreamPushConsumer, JetStreamPushConsumer>();
+    services.AddScoped<IJetStreamPullConsumer, JetStreamPullConsumer>();
+
+    services.AddScoped<IEventHandler<ArticlePublishedEvent>, ArticlePublishedEventHandler>();
+    services.AddScoped<IEventHandler<CommentCreatedEvent>, CommentCreatedEventHandler>();
+    services.AddScoped<IEventHandler<UserFollowedEvent>, UserFollowedEventHandler>();
+
+    // Background consumers as hosted services
+    services.AddHostedService<UserRegisteredPushConsumer>();
+    services.AddHostedService<UserLoggedInPullConsumer>();
     services.AddHostedService<EmailServiceResponder>();
 
     // Keep existing hosted service for backward compatibility

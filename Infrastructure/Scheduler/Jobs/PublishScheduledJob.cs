@@ -1,6 +1,5 @@
 using Coravel.Invocable;
 
-using Medium.Api.Domain.Article.Dtos;
 using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
@@ -10,48 +9,55 @@ namespace Medium.Api.Infrastructure.Scheduler.Jobs;
 public class PublishScheduledJob(
     ArticleQueryRepository articleQueryRepository,
     ArticleStoreRepository articleStoreRepository,
-    INatsPublisher publisher,
+    IJetStreamEventPublisher jetStreamPublisher,
+    IHostApplicationLifetime appLifetime,
     ILogger<PublishScheduledJob> logger) : IInvocable
 {
-  private readonly ArticleQueryRepository _articleQueryRepository = articleQueryRepository;
-  private readonly ArticleStoreRepository _articleStoreRepository = articleStoreRepository;
-  private readonly INatsPublisher _publisher = publisher;
-  private readonly ILogger<PublishScheduledJob> _logger = logger;
-
   public async Task Invoke()
   {
+    // Fetch the application cancellation token to support graceful shutdowns
+    var cancellationToken = appLifetime.ApplicationStopping;
     try
     {
-      _logger.LogInformation("PublishScheduledJob running at {Time}", DateTime.UtcNow);
+      logger.LogInformation("PublishScheduledJob running at {Time}", DateTime.UtcNow);
 
       // Get articles that are scheduled for publishing and whose scheduled time has passed
-      var scheduledArticles = await _articleQueryRepository.GetScheduledArticlesToPublishAsync(default);
+      var scheduledArticles = await articleQueryRepository.GetScheduledArticlesToPublishAsync(cancellationToken);
+      if (scheduledArticles == null || !scheduledArticles.Any())
+      {
+        logger.LogInformation("No scheduled articles found to be published.");
+        return;
+      }
 
       foreach (var article in scheduledArticles)
       {
-        // Publish the article directly via repository
+        // Ensure the loop stops immediately if a cancellation has been requested
+        cancellationToken.ThrowIfCancellationRequested();
+        // Update article status directly via repository
         article.Status = Enums.ArticleStatus.Published;
         article.PublishedAt = DateTime.UtcNow;
-        await _articleStoreRepository.SaveChangesAsync(default);
-
-        // Publish event to NATS
+        await articleStoreRepository.SaveChangesAsync(cancellationToken);
+        // Build event payload matching the standard format
         var @event = new ArticlePublishedEvent(
             article.Id.ToString(),
-            article.Title,
             article.AuthorId.ToString(),
+            article.Title,
             DateTime.UtcNow
         );
+        // Publish event to NATS JetStream instead of standard core NATS publisher
+        await jetStreamPublisher.PublishToStreamAsync(NatsSubjects.ArticlePublished, @event, cancellationToken);
 
-        await _publisher.PublishAsync(NatsSubjects.ArticlePublished, @event);
-
-        _logger.LogInformation("Published scheduled article {ArticleId}", article.Id);
+        logger.LogInformation("Successfully published scheduled article {ArticleId}", article.Id);
       }
-
-      _logger.LogInformation("PublishScheduledJob completed. Published {Count} articles", scheduledArticles.Count);
+      logger.LogInformation("PublishScheduledJob completed. Published {Count} articles", scheduledArticles.Count);
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning("PublishScheduledJob execution was canceled gracefully due to application shutdown.");
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error in PublishScheduledJob");
+      logger.LogError(ex, "Error occurred inside PublishScheduledJob");
       throw;
     }
   }
