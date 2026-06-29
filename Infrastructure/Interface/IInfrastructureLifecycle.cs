@@ -11,10 +11,12 @@ public interface IDbConnectionLifecycle : IInfrastructureLifecycle
   Task<bool> CanConnectAsync(CancellationToken cancellationToken = default);
 }
 
-public interface ICacheLifecycle : IInfrastructureLifecycle
-{
-}
+public interface ICacheLifecycle : IInfrastructureLifecycle { }
 
-public interface INatsLifecycle : IInfrastructureLifecycle
+public interface INatsLifecycle : IInfrastructureLifecycle { }
+
+public interface IManuallyStartableService
 {
+  Task StartAsync(CancellationToken cancellationToken = default);
+  Task StopAsync(CancellationToken cancellationToken = default);
 }

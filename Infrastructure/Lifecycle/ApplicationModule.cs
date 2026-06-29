@@ -3,7 +3,7 @@ using Medium.Api.Infrastructure.Interface;
 
 namespace Medium.Api.Infrastructure.Lifecycle;
 
-public class ApplicationModule : IDisposable
+public sealed class ApplicationModule : IDisposable
 {
   private readonly IDbConnectionLifecycle _dbLifecycle;
   private readonly ICacheLifecycle _cacheLifecycle;
@@ -20,7 +20,7 @@ public class ApplicationModule : IDisposable
     _logger.LogInformation("[ApplicationModule] Created and all lifecycle dependencies resolved");
   }
 
-  public void Dispose()
+  void IDisposable.Dispose()
   {
     _logger.LogInformation("[ApplicationModule] Disposing - shutting down all infrastructure connections...");
 

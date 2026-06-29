@@ -3,6 +3,7 @@ using Medium.Api.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
 using Minio;
+using Minio.DataModel;
 using Minio.DataModel.Args;
 
 namespace Medium.Api.Infrastructure.Storage;

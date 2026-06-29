@@ -1,24 +1,16 @@
 using Medium.Api.Infrastructure.Interface;
+using Medium.Api.Infrastructure.Nats.Consumers;
 using Medium.Api.Infrastructure.Nats.Services;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Medium.Api.Infrastructure.Lifecycle;
 
-public class ApplicationLifecycleService : IHostedService, IDisposable
+public sealed class ApplicationLifecycleService(IServiceProvider serviceProvider, ILogger<ApplicationLifecycleService> logger) : IHostedService, IDisposable
 {
-  private readonly IServiceProvider _serviceProvider;
-  private readonly ILogger<ApplicationLifecycleService> _logger;
+  private readonly IServiceProvider _serviceProvider = serviceProvider;
+  private readonly ILogger<ApplicationLifecycleService> _logger = logger;
   private ApplicationModule? _module;
   private IServiceScope? _scope;
-
-  public ApplicationLifecycleService(IServiceProvider serviceProvider, ILogger<ApplicationLifecycleService> logger)
-  {
-    _serviceProvider = serviceProvider;
-    _logger = logger;
-  }
+  private List<IManuallyStartableService>? _consumerServices;
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
@@ -52,11 +44,49 @@ public class ApplicationLifecycleService : IHostedService, IDisposable
       }
       catch (Exception ex)
       {
-        _logger.LogWarning(ex, "JetStream initialization failed. The application will continue without JetStream functionality.");
+        _logger.LogError(ex, "JetStream initialization failed. The application will continue without JetStream functionality.");
         _logger.LogWarning("To enable JetStream, ensure NATS server is started with -js flag");
       }
 
       _logger.LogInformation("[OnStartup] ✓ Application is ready and running");
+
+      // Start NATS consumer services after infrastructure is ready
+      _consumerServices = new List<IManuallyStartableService>();
+      try
+      {
+        var userRegisteredConsumer = _scope.ServiceProvider.GetRequiredService<UserRegisteredPushConsumer>();
+        _consumerServices.Add(userRegisteredConsumer);
+        _ = Task.Run(() => userRegisteredConsumer.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started UserRegisteredPushConsumer");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start UserRegisteredPushConsumer");
+      }
+
+      try
+      {
+        var userLoggedInConsumer = _scope.ServiceProvider.GetRequiredService<UserLoggedInPullConsumer>();
+        _consumerServices.Add(userLoggedInConsumer);
+        _ = Task.Run(() => userLoggedInConsumer.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started UserLoggedInPullConsumer");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start UserLoggedInPullConsumer");
+      }
+
+      try
+      {
+        var emailResponder = _scope.ServiceProvider.GetRequiredService<EmailServiceResponder>();
+        _consumerServices.Add(emailResponder);
+        _ = Task.Run(() => emailResponder.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started EmailServiceResponder");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start EmailServiceResponder");
+      }
     }
     catch (Exception ex)
     {
@@ -69,30 +99,46 @@ public class ApplicationLifecycleService : IHostedService, IDisposable
   {
     _logger.LogInformation("--- [OnShutdown] Stopping Application ---");
 
+    // Stop all consumer services
+    if (_consumerServices != null)
+    {
+      foreach (var consumer in _consumerServices)
+      {
+        try
+        {
+          await consumer.StopAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Error stopping consumer service");
+        }
+      }
+      _consumerServices.Clear();
+      _consumerServices = null;
+    }
+
     if (_module != null)
     {
-      _module.Dispose();
+      ((IDisposable)_module).Dispose();
       _module = null;
     }
 
     // Shutdown NATS connection
     var natsLifecycle = _scope?.ServiceProvider.GetRequiredService<INatsLifecycle>();
     if (natsLifecycle != null)
-    {
       await natsLifecycle.ShutdownAsync(cancellationToken);
-    }
 
     _scope?.Dispose();
     _scope = null;
 
-    _logger.LogInformation("[OnShutdown] ✓ Application stopped cleanly");
+    _logger.LogInformation("[OnShutdown] ✓ Application gracefully shutdown");
   }
 
   public void Dispose()
   {
     if (_module != null)
     {
-      _module.Dispose();
+      ((IDisposable)_module).Dispose();
       _module = null;
     }
     _scope?.Dispose();

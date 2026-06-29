@@ -3,17 +3,16 @@ using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Nats.Consumers;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Handler;
-using Medium.Api.Infrastructure.Nats.Hosted;
 using Medium.Api.Infrastructure.Nats.Services;
-
 
 namespace Medium.Api.Infrastructure.Nats.Module;
 
 public static class NatsModule
 {
   public static IServiceCollection AddNatsInfrastructure(
-      this IServiceCollection services,
-      IConfiguration configuration)
+    this IServiceCollection services,
+    IConfiguration configuration
+  )
   {
     // Connection provider as singleton with lifecycle support
     services.AddSingleton<INatsConnectionProvider, NatsConnectionProvider>();
@@ -32,13 +31,10 @@ public static class NatsModule
     services.AddScoped<IEventHandler<CommentCreatedEvent>, CommentCreatedEventHandler>();
     services.AddScoped<IEventHandler<UserFollowedEvent>, UserFollowedEventHandler>();
 
-    // Background consumers as hosted services
-    services.AddHostedService<UserRegisteredPushConsumer>();
-    services.AddHostedService<UserLoggedInPullConsumer>();
-    services.AddHostedService<EmailServiceResponder>();
-
-    // Keep existing hosted service for backward compatibility
-    services.AddHostedService<NatsSubscriptionHostedService>();
+    // Background consumers - registered as scoped services, started by ApplicationLifecycleService
+    services.AddScoped<UserRegisteredPushConsumer>();
+    services.AddScoped<UserLoggedInPullConsumer>();
+    services.AddScoped<EmailServiceResponder>();
 
     return services;
   }

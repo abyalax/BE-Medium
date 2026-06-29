@@ -1,7 +1,7 @@
+using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
 
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using NATS.Client.JetStream;
@@ -11,27 +11,15 @@ namespace Medium.Api.Infrastructure.Nats.Consumers;
 
 public class UserLoggedInPullConsumer(
     INatsConnectionProvider connectionProvider,
-    ILogger<UserLoggedInPullConsumer> logger) : BackgroundService
+    ILogger<UserLoggedInPullConsumer> logger) : IManuallyStartableService
 {
-  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+  private CancellationTokenSource? _cancellationTokenSource;
+
+  public async Task StartAsync(CancellationToken cancellationToken = default)
   {
     logger.LogInformation("Starting UserLoggedInPullConsumer...");
-    
-    // Wait for NATS connection to be ready
-    while (!stoppingToken.IsCancellationRequested)
-    {
-      try
-      {
-        var _ = connectionProvider.Connection;
-        break;
-      }
-      catch (InvalidOperationException)
-      {
-        logger.LogInformation("Waiting for NATS connection to be initialized...");
-        await Task.Delay(1000, stoppingToken);
-      }
-    }
-    
+    _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
     try
     {
       var js = new NatsJSContext(connectionProvider.Connection);
@@ -46,20 +34,20 @@ public class UserLoggedInPullConsumer(
               FilterSubject = "user.logged-in",
               AckPolicy = ConsumerConfigAckPolicy.Explicit
             },
-            cancellationToken: stoppingToken);
+            cancellationToken: cancellationToken);
       }
       catch (Exception)
       {
-        consumer = await js.GetConsumerAsync("USER_EVENTS", "user-logged-in-pull", cancellationToken: stoppingToken);
+        consumer = await js.GetConsumerAsync("USER_EVENTS", "user-logged-in-pull", cancellationToken: cancellationToken);
       }
 
-      while (!stoppingToken.IsCancellationRequested)
+      while (!cancellationToken.IsCancellationRequested)
       {
         try
         {
           var fetchOpts = new NatsJSFetchOpts { MaxMsgs = 10, Expires = TimeSpan.FromSeconds(5) };
 
-          await foreach (var msg in consumer.FetchAsync<UserLoggedInEvent>(opts: fetchOpts, cancellationToken: stoppingToken))
+          await foreach (var msg in consumer.FetchAsync<UserLoggedInEvent>(opts: fetchOpts, cancellationToken: cancellationToken))
           {
             try
             {
@@ -68,12 +56,12 @@ public class UserLoggedInPullConsumer(
               {
                 logger.LogInformation("Successfully processed user logged in event for {Email}", msg.Data.Email);
               }
-              await msg.AckAsync(cancellationToken: stoppingToken);
+              await msg.AckAsync(cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
               logger.LogError(ex, "Error processing individual user logged in event");
-              await msg.NakAsync(cancellationToken: stoppingToken);
+              await msg.NakAsync(cancellationToken: cancellationToken);
             }
           }
         }
@@ -82,17 +70,24 @@ public class UserLoggedInPullConsumer(
           logger.LogError(ex, "Error fetching user logged in events");
         }
 
-        await Task.Delay(1000, stoppingToken);
+        await Task.Delay(1000, cancellationToken);
       }
     }
-    catch (NatsJSException ex) when (!stoppingToken.IsCancellationRequested)
+    catch (NatsJSException ex) when (!cancellationToken.IsCancellationRequested)
     {
       logger.LogWarning(ex, "JetStream is not available. UserLoggedInPullConsumer will not run.");
       logger.LogWarning("To enable JetStream, start NATS server with -js flag");
     }
-    catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+    catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
     {
       logger.LogError(ex, "Error in UserLoggedInPullConsumer");
     }
+  }
+
+  public async Task StopAsync(CancellationToken cancellationToken = default)
+  {
+    _cancellationTokenSource?.Cancel();
+    _cancellationTokenSource?.Dispose();
+    await Task.CompletedTask;
   }
 }

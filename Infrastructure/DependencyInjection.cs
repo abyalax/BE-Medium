@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using FluentValidation;
 
 using MediatR;
@@ -18,10 +20,12 @@ using Medium.Api.Infrastructure.Email.Module;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Lifecycle;
-using Medium.Api.Infrastructure.Nats.Handler;
+using Medium.Api.Infrastructure.Nats;
 using Medium.Api.Infrastructure.Nats.Module;
 using Medium.Api.Infrastructure.Scheduler.Module;
+using Medium.Api.Infrastructure.Storage;
 using Medium.Api.Infrastructure.Storage.Module;
+
 
 namespace Medium.Api.Infrastructure;
 
@@ -40,6 +44,9 @@ public static class DependencyInjection
     services.AddCoravelInfrastructure();
     services.AddEventHandlers();
 
+    services.AddHostedService<ApplicationLifecycleService>();
+    services.AddAppHealthChecks(configuration);
+
     // Register MediatR
     services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
@@ -48,7 +55,6 @@ public static class DependencyInjection
     services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
     services.AddScoped<ApplicationModule>();
-    services.AddHostedService<ApplicationLifecycleService>();
 
     return services;
   }
@@ -64,6 +70,39 @@ public static class DependencyInjection
     services.AddTagModule();
     services.AddReadingHistoryModule();
     services.AddNotificationModule();
+
+    return services;
+  }
+
+  private static readonly string[] readyTags = ["ready"];
+  private static readonly string[] liveTags = ["live"];
+
+  private static IServiceCollection AddAppHealthChecks(this IServiceCollection services, IConfiguration configuration)
+  {
+    services.AddHealthChecks()
+        .AddCheck("self", () => HealthCheckResult.Healthy(), tags: liveTags)
+        .AddSqlServer(
+          connectionString: configuration.GetConnectionString("DefaultConnection")!,
+          name: "SQL Server",
+          tags: readyTags)
+        .AddRedis(
+          redisConnectionString: $"{configuration["Redis:Host"]}:{configuration["Redis:Port"]},password={configuration["Redis:Password"]}",
+          name: "Redis Cache",
+          tags: readyTags
+        )
+        .AddCheck<NatsHealthCheck>("NATS Broker", tags: readyTags)
+        .AddTcpHealthCheck(
+          setup =>
+          {
+            setup.AddHost(
+              configuration["Email:Host"]!,
+              int.Parse(configuration["Email:Port"]!)
+            );
+          },
+          name: "Mailpit SMTP",
+          tags: readyTags
+        )
+        .AddCheck<MinioHealthCheck>("MinIO Storage", tags: readyTags);
 
     return services;
   }

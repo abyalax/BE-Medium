@@ -1,8 +1,7 @@
+using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
 
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using NATS.Client.JetStream;
 using NATS.Client.JetStream.Models;
@@ -11,27 +10,15 @@ namespace Medium.Api.Infrastructure.Nats.Consumers;
 
 public class UserRegisteredPushConsumer(
     INatsConnectionProvider connectionProvider,
-    ILogger<UserRegisteredPushConsumer> logger) : BackgroundService
+    ILogger<UserRegisteredPushConsumer> logger) : IManuallyStartableService
 {
-  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+  private CancellationTokenSource? _cancellationTokenSource;
+
+  public async Task StartAsync(CancellationToken cancellationToken = default)
   {
     logger.LogInformation("Starting UserRegisteredPushConsumer...");
-    
-    // Wait for NATS connection to be ready
-    while (!stoppingToken.IsCancellationRequested)
-    {
-      try
-      {
-        var _ = connectionProvider.Connection;
-        break;
-      }
-      catch (InvalidOperationException)
-      {
-        logger.LogInformation("Waiting for NATS connection to be initialized...");
-        await Task.Delay(1000, stoppingToken);
-      }
-    }
-    
+    _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
     try
     {
       var js = new NatsJSContext(connectionProvider.Connection);
@@ -46,14 +33,14 @@ public class UserRegisteredPushConsumer(
               FilterSubject = "user.registered",
               AckPolicy = ConsumerConfigAckPolicy.Explicit
             },
-            cancellationToken: stoppingToken);
+            cancellationToken: cancellationToken);
       }
       catch (Exception)
       {
-        consumer = await js.GetConsumerAsync("USER_EVENTS", "user-registered-push", cancellationToken: stoppingToken);
+        consumer = await js.GetConsumerAsync("USER_EVENTS", "user-registered-push", cancellationToken: cancellationToken);
       }
 
-      await foreach (var msg in consumer.ConsumeAsync<UserRegisteredEvent>(cancellationToken: stoppingToken))
+      await foreach (var msg in consumer.ConsumeAsync<UserRegisteredEvent>(cancellationToken: cancellationToken))
       {
         try
         {
@@ -62,23 +49,30 @@ public class UserRegisteredPushConsumer(
           {
             logger.LogInformation("Successfully processed user registered event for {Email}", msg.Data.Email);
           }
-          await msg.AckAsync(cancellationToken: stoppingToken);
+          await msg.AckAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
           logger.LogError(ex, "Error processing user registered event");
-          await msg.NakAsync(cancellationToken: stoppingToken);
+          await msg.NakAsync(cancellationToken: cancellationToken);
         }
       }
     }
-    catch (NatsJSException ex) when (!stoppingToken.IsCancellationRequested)
+    catch (NatsJSException ex) when (!cancellationToken.IsCancellationRequested)
     {
-      logger.LogWarning(ex, "JetStream is not available. UserRegisteredPushConsumer will not run.");
+      logger.LogError(ex, "JetStream is not available. UserRegisteredPushConsumer will not run.");
       logger.LogWarning("To enable JetStream, start NATS server with -js flag");
     }
-    catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+    catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
     {
       logger.LogError(ex, "Error in UserRegisteredPushConsumer");
     }
+  }
+
+  public async Task StopAsync(CancellationToken cancellationToken = default)
+  {
+    _cancellationTokenSource?.Cancel();
+    _cancellationTokenSource?.Dispose();
+    await Task.CompletedTask;
   }
 }

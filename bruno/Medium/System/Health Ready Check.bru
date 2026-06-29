@@ -1,11 +1,11 @@
 meta {
-  name: Health Check
+  name: Health Ready Check
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
-  url: {{URL_API}}/health
+  url: {{URL_API}}/health/ready
   body: none
   auth: none
 }

@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.Network" Version="9.0.*" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.*" />
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.*" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.*" />
     <PackageReference Include="Bogus" Version="35.6.*" />
     <PackageReference Include="Coravel" Version="6.0.*" />
