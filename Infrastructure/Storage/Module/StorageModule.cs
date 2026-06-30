@@ -14,7 +14,7 @@ public static class MinioModule
   {
 
     var minioConfig = configuration
-      .GetSection("Minio")
+      .GetSection("AppSettings:Minio")
       .Get<MinioConfiguration>()
       ?? throw new InvalidOperationException("Minio configuration is missing.");
 

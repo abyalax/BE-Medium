@@ -25,7 +25,7 @@ public class OnnxAISummarizationService(
 
     try
     {
-      var modelPath = _configuration["AI:ModelPath"] ?? throw new InvalidOperationException("AI Model Path must be provided");
+      var modelPath = _configuration["AppSettings:AI:ModelPath"] ?? throw new InvalidOperationException("AI Model Path must be provided");
 
       // ONNX Runtime GenAI expects a directory path, not a file path
       // The directory should contain genai_config.json and the model files

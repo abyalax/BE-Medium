@@ -61,7 +61,7 @@ public class ArticleQueryRepository(ApplicationDbContext context)
       .Include(a => a.Thumbnail)
       .Include(a => a.ContentImages)
       .Include(a => a.ArticleTags)
-          .ThenInclude(at => at.Tag)
+        .ThenInclude(at => at.Tag)
       .AsQueryable();
 
     if (authorId.HasValue)
@@ -235,18 +235,18 @@ public class ArticleQueryRepository(ApplicationDbContext context)
     return await context.Tags.AsNoTracking().ToListAsync(cancellationToken);
   }
 
-  public async Task<ArticleDto?> GetArticleWithAuthorTagsAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<ArticleModel?> GetArticleWithAuthorTagsAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var article = await context.Articles.AsNoTracking()
       .Include(a => a.Author)
       .Include(a => a.Thumbnail)
       .Include(a => a.ContentImages)
       .Include(a => a.ArticleTags)
-          .ThenInclude(at => at.Tag)
+        .ThenInclude(at => at.Tag)
       .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
     if (article == null) return null;
-    return ArticleMapper.ToResponse(article);
+    return article;
   }
 
   public async Task<IReadOnlyCollection<ArticleModel>> GetScheduledArticlesToPublishAsync(CancellationToken cancellationToken = default)

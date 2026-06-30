@@ -19,7 +19,7 @@ public class Program
   {
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.ConfigureAppSettings(builder.Configuration);
+    builder.Services.ConfigureApplicationSettings(builder.Configuration);
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
       options.UseSqlServer(

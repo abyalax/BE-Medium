@@ -15,9 +15,9 @@ public static class AuthenticationExtensions
       this IServiceCollection services,
       IConfiguration config)
   {
-    var jwtKey = config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured");
-    var jwtIssuer = config["Jwt:Issuer"] ?? "Medium.Api";
-    var jwtAudience = config["Jwt:Audience"] ?? "Medium.Api";
+    var jwtKey = config["AppSettings:Jwt:Key"] ?? throw new InvalidOperationException("AppSettings:Jwt:Key is not configured");
+    var jwtIssuer = config["AppSettings:Jwt:Issuer"] ?? "Medium.Api";
+    var jwtAudience = config["AppSettings:Jwt:Audience"] ?? "Medium.Api";
 
     services.AddAuthentication(options =>
     {

@@ -14,7 +14,9 @@ public static class Permissions
 
     Bookmarks.Create, Bookmarks.CreateOwn, Bookmarks.Delete, Bookmarks.DeleteOwn, Bookmarks.Update, Bookmarks.UpdateOwn,
 
-    Authors.Follow, Authors.UnFollow, Authors.GetProfile, Comments.Create, ReadingHistory.Get,
+    Authors.Follow, Authors.UnFollow, Authors.GetProfile, Comments.Create,
+
+    ReadingHistory.Create, ReadingHistory.Read, ReadingHistory.Delete,
 
     Tags.Create, Analytics.GetOwn, Analytics.GetSystem, Admin.ManageData
   ];
@@ -91,7 +93,11 @@ public static class Permissions
 
   public static class ReadingHistory
   {
-    public const string Get = "reading_history.get";
+    public const string Create = "reading_history.create";
+    public const string Read = "reading_history.read";
+    public const string ReadOwn = "reading_history.read_own";
+    public const string Delete = "reading_history.delete";
+    public const string DeleteOwn = "reading_history.delete_own";
   }
 
   public static class Tags

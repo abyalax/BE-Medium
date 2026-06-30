@@ -4,7 +4,7 @@ using Medium.Api.Domain.Notification.Repositories;
 
 namespace Medium.Api.Domain.Notification.Commands.Handlers;
 
-public class MarkAsReadNotificationCommandHandler(
+public class MarkAsReadNotificationHandler(
     NotificationStoreRepository storeRepository
   ) : IRequestHandler<MarkAsReadNotificationCommand>
 {

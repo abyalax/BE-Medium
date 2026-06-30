@@ -1,9 +1,9 @@
-using Medium.Api.Infrastructure.Settings;
+
+using Medium.Api.Infrastructure.Settings.Dtos;
 
 using Microsoft.Extensions.Options;
 
 using Minio;
-using Minio.DataModel;
 using Minio.DataModel.Args;
 
 namespace Medium.Api.Infrastructure.Storage;
@@ -12,7 +12,7 @@ public class MinioClientWrapper : IMinioClient
 {
   private readonly Minio.IMinioClient _client;
 
-  public MinioClientWrapper(IOptions<AppSettings> settings)
+  public MinioClientWrapper(IOptions<ApplicationSettings> settings)
   {
     var minioSettings = settings.Value.Minio;
     _client = new MinioClient()

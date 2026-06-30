@@ -6,7 +6,7 @@ using Medium.Api.Domain.Follow.Repositories;
 using Medium.Api.Domain.User.Repositories;
 using Medium.Api.Infrastructure.Email.Models;
 using Medium.Api.Infrastructure.Email.Services;
-using Medium.Api.Infrastructure.Settings;
+using Medium.Api.Infrastructure.Settings.Dtos;
 
 using Microsoft.Extensions.Options;
 
@@ -19,7 +19,7 @@ public class NewsletterQueueJob(
     UserQueryRepository userQueryRepository,
     MailpitEmailService emailService,
     EmailTemplateService emailTemplateService,
-    IOptions<AppSettings> appSettingsOptions,
+    IOptions<ApplicationSettings> appSettingsOptions,
     IHostApplicationLifetime appLifetime,
     ILogger<NewsletterQueueJob> logger) : IInvocable
 {

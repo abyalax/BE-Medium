@@ -7,7 +7,7 @@ using NotificationModel = Medium.Api.Models.Notification;
 
 namespace Medium.Api.Domain.Notification.Commands.Handlers;
 
-public class CreateRangeNotificationCommandHandler(
+public class CreateRangeNotificationHandler(
     NotificationStoreRepository storeRepository
   ) : IRequestHandler<CreateRangeNotificationCommand, IReadOnlyCollection<NotificationDto>?>
 {

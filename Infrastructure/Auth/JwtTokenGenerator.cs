@@ -8,10 +8,10 @@ namespace Medium.Api.Infrastructure.Auth;
 
 public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerator
 {
-  private readonly string _secretKey = configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key");
-  private readonly string _issuer = configuration["Jwt:Issuer"] ?? "Medium.Api";
-  private readonly string _audience = configuration["Jwt:Audience"] ?? "Medium.Api";
-  private readonly int _expiryMinutes = int.Parse(configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60");
+  private readonly string _secretKey = configuration["AppSettings:Jwt:Key"] ?? throw new ArgumentNullException("AppSettings:Jwt:Key");
+  private readonly string _issuer = configuration["AppSettings:Jwt:Issuer"] ?? "Medium.Api";
+  private readonly string _audience = configuration["AppSettings:Jwt:Audience"] ?? "Medium.Api";
+  private readonly int _expiryMinutes = int.Parse(configuration["AppSettings:Jwt:AccessTokenExpirationMinutes"] ?? "60");
 
   public string GenerateToken(Guid userId, string email, IEnumerable<string> roles, IEnumerable<string> permissions)
   {

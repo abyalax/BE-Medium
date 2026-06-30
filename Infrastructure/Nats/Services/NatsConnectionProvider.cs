@@ -18,7 +18,7 @@ public class NatsConnectionProvider(IConfiguration configuration, ILogger<NatsCo
 
   public async Task InitializeAsync(CancellationToken cancellationToken = default)
   {
-    var url = configuration["Nats:Url"] ?? throw new InvalidOperationException("Nats URL is required");
+    var url = configuration["AppSettings:Nats:Url"] ?? throw new InvalidOperationException("Nats URL is required");
     logger.LogInformation("Connecting to NATS at {Url}...", url);
 
     var opts = NatsOpts.Default with

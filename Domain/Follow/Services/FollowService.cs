@@ -5,17 +5,21 @@ using Medium.Api.Domain.Follow.Repositories;
 using Medium.Api.Infrastructure.Exceptions;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
+using Medium.Api.Infrastructure.Settings.Dtos;
+
+using Microsoft.Extensions.Options;
 
 using FollowModel = Medium.Api.Models.Follow;
 
 namespace Medium.Api.Domain.Follow.Services;
 
-public class FollowService(FollowStoreRepository followStoreRepository, FollowQueryRepository followQueryRepository, INatsPublisher publisher)
+public class FollowService(
+  FollowStoreRepository followStoreRepository,
+  FollowQueryRepository followQueryRepository,
+  IOptions<ApplicationSettings> settings,
+  INatsPublisher publisher
+)
 {
-  private const int MaxPageSize = 100;
-  private readonly FollowStoreRepository _followStoreRepository = followStoreRepository;
-  private readonly FollowQueryRepository _followQueryRepository = followQueryRepository;
-  private readonly INatsPublisher _publisher = publisher;
   private readonly string messageNotFound = "Follow relationship not found";
 
   public async Task<FollowResponse> CreateAsync(
@@ -28,7 +32,7 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       throw new BadRequestException("You cannot follow yourself");
     }
 
-    if (await _followQueryRepository.ExistsAsync(followerId, request.FollowingId, cancellationToken))
+    if (await followQueryRepository.ExistsAsync(followerId, request.FollowingId, cancellationToken))
     {
       throw new ConflictException("You are already following this user");
     }
@@ -40,24 +44,24 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       FollowingId = request.FollowingId
     };
 
-    await _followStoreRepository.AddAsync(follow, cancellationToken);
-    await _followStoreRepository.SaveChangesAsync(cancellationToken);
+    await followStoreRepository.AddAsync(follow, cancellationToken);
+    await followStoreRepository.SaveChangesAsync(cancellationToken);
 
     var @event = new UserFollowedEvent
     {
-        FollowerId = follow.FollowerId.ToString(),
-        FollowingId = follow.FollowingId.ToString(),
-        FollowedAt = follow.CreatedAt
+      FollowerId = follow.FollowerId.ToString(),
+      FollowingId = follow.FollowingId.ToString(),
+      FollowedAt = follow.CreatedAt
     };
 
-    await _publisher.PublishAsync(NatsSubjects.UserFollowed, @event);
+    await publisher.PublishAsync(NatsSubjects.UserFollowed, @event);
 
     return await GetByIdAsync(follow.Id, cancellationToken);
   }
 
   public async Task<FollowResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {
-    var follow = await _followQueryRepository.GetFollowWithUsersAsync(id, cancellationToken)
+    var follow = await followQueryRepository.GetFollowWithUsersAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
 
     return ToResponse(follow);
@@ -70,10 +74,10 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       CancellationToken cancellationToken = default)
   {
     page = page < 1 ? 1 : page;
-    pageSize = pageSize < 1 ? 10 : Math.Min(pageSize, MaxPageSize);
+    pageSize = pageSize < 1 ? 10 : Math.Min(pageSize, settings.Value.Pagination.MaxPageSize);
 
-    var totalItems = await _followQueryRepository.CountFollowersAsync(userId, cancellationToken);
-    var items = await _followQueryRepository.GetFollowersAsync(userId, page, pageSize, cancellationToken);
+    var totalItems = await followQueryRepository.CountFollowersAsync(userId, cancellationToken);
+    var items = await followQueryRepository.GetFollowersAsync(userId, page, pageSize, cancellationToken);
     var totalPages = totalItems == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)pageSize);
 
     return new PagedFollowResponse(
@@ -91,10 +95,10 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       CancellationToken cancellationToken = default)
   {
     page = page < 1 ? 1 : page;
-    pageSize = pageSize < 1 ? 10 : Math.Min(pageSize, MaxPageSize);
+    pageSize = pageSize < 1 ? 10 : Math.Min(pageSize, settings.Value.Pagination.MaxPageSize);
 
-    var totalItems = await _followQueryRepository.CountFollowingAsync(userId, cancellationToken);
-    var items = await _followQueryRepository.GetFollowingAsync(userId, page, pageSize, cancellationToken);
+    var totalItems = await followQueryRepository.CountFollowingAsync(userId, cancellationToken);
+    var items = await followQueryRepository.GetFollowingAsync(userId, page, pageSize, cancellationToken);
     var totalPages = totalItems == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)pageSize);
 
     return new PagedFollowResponse(
@@ -110,7 +114,7 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       Guid currentUserId,
       CancellationToken cancellationToken = default)
   {
-    var follow = await _followQueryRepository.GetByIdAsync(id, cancellationToken)
+    var follow = await followQueryRepository.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException(messageNotFound);
 
     if (follow.FollowerId != currentUserId)
@@ -118,8 +122,8 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       throw new ForbiddenException("You can only unfollow from your own account");
     }
 
-    _followStoreRepository.Remove(follow);
-    await _followStoreRepository.SaveChangesAsync(cancellationToken);
+    followStoreRepository.Remove(follow);
+    await followStoreRepository.SaveChangesAsync(cancellationToken);
   }
 
   public async Task UnfollowAsync(
@@ -127,12 +131,12 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
       Guid followingId,
       CancellationToken cancellationToken = default)
   {
-    var follow = await _followQueryRepository.GetByFollowerAndFollowingAsync(followerId, followingId, cancellationToken);
+    var follow = await followQueryRepository.GetByFollowerAndFollowingAsync(followerId, followingId, cancellationToken);
 
     if (follow != null)
     {
-      _followStoreRepository.Remove(follow);
-      await _followStoreRepository.SaveChangesAsync(cancellationToken);
+      followStoreRepository.Remove(follow);
+      await followStoreRepository.SaveChangesAsync(cancellationToken);
     }
   }
 

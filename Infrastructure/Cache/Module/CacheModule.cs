@@ -12,13 +12,14 @@ namespace Medium.Api.Infrastructure.Cache.Module;
 public static class CacheModule
 {
   public static IServiceCollection AddRedisInfrastructure(
-      this IServiceCollection services,
-      IConfiguration configuration)
+    this IServiceCollection services,
+    IConfiguration configuration
+  )
   {
     var redisConfig = configuration
-       .GetSection("Redis")
-       .Get<RedisConfiguration>()
-       ?? throw new InvalidOperationException("Redis configuration is missing.");
+      .GetSection("AppSettings:Redis")
+      .Get<RedisConfiguration>()
+      ?? throw new InvalidOperationException("Redis configuration is missing.");
 
     services.AddSingleton(redisConfig);
     services.AddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();

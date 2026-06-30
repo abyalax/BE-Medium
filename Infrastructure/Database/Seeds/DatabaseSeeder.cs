@@ -88,7 +88,9 @@ public static class DatabaseSeeder
         PermissionConstant.Authors.Follow,
         PermissionConstant.Comments.Create,
         PermissionConstant.Authors.GetProfile,
-        PermissionConstant.ReadingHistory.Get
+        PermissionConstant.ReadingHistory.Create,
+        PermissionConstant.ReadingHistory.ReadOwn,
+        PermissionConstant.ReadingHistory.DeleteOwn,
       };
 
     var authorPermissionCodes = readerPermissionCodes.Concat([
@@ -134,7 +136,7 @@ public static class DatabaseSeeder
     CancellationToken cancellationToken
   )
   {
-    // Ambil langsung dari data yang sudah di-initialize di DatabaseMockData
+    // Get data direct from initialized on DatabaseMockData
     foreach (var user in DatabaseMockData.GeneratedUsers)
     {
       if (!await context.Users.AnyAsync(u => u.Email == user.Email, cancellationToken))

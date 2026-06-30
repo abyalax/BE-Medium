@@ -1,7 +1,7 @@
 
+using Medium.Api.Domain.Storage.Dtos;
 using Medium.Api.Domain.Tag.Dtos;
 using Medium.Api.Enums;
-using Medium.Api.Infrastructure.Storage.Dtos;
 
 namespace Medium.Api.Domain.Article.Dtos;
 

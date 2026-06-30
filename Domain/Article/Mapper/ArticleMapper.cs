@@ -1,6 +1,6 @@
 using Medium.Api.Domain.Article.Dtos;
+using Medium.Api.Domain.Storage.Mapper;
 using Medium.Api.Domain.Tag.Dtos;
-using Medium.Api.Infrastructure.Storage.Dtos;
 
 using ArticleModel = Medium.Api.Models.Article;
 
@@ -16,29 +16,9 @@ public class ArticleMapper
       at.Tag.Slug
     )).ToList();
 
-    var contentImages = article.ContentImages.Select(os => new ObjectStorageDto(
-      os.Id,
-      os.ObjectKey,
-      os.Bucket,
-      os.MimeType,
-      os.OriginalName,
-      os.Size,
-      os.AccessTypes,
-      null,
-      os.CreatedAt
-    )).ToList();
+    var contentImages = article.ContentImages.Select(ObjectStorageMapper.ToResponse).ToList();
 
-    var thumbnail = article.Thumbnail == null ? null : new ObjectStorageDto(
-      article.Thumbnail.Id,
-      article.Thumbnail.Bucket,
-      article.Thumbnail.ObjectKey,
-      article.Thumbnail.MimeType,
-      article.Thumbnail.OriginalName,
-      article.Thumbnail.Size ?? 0,
-      article.Thumbnail.AccessTypes,
-      null,
-      article.Thumbnail.CreatedAt
-    );
+    var thumbnail = article.Thumbnail == null ? null : ObjectStorageMapper.ToResponse(article.Thumbnail);
 
     return new ArticleDto(
       article.Id,

@@ -1,8 +1,3 @@
-using Medium.Api.Infrastructure.Settings;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-
 namespace Medium.Api.Infrastructure.Storage;
 
 public static class MinioClientFactory

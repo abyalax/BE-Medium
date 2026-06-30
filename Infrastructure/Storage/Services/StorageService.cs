@@ -1,6 +1,7 @@
+using Medium.Api.Domain.Storage.Dtos;
+using Medium.Api.Domain.Storage.Mapper;
 using Medium.Api.Enums;
 using Medium.Api.Infrastructure.Storage.Config;
-using Medium.Api.Infrastructure.Storage.Dtos;
 using Medium.Api.Infrastructure.Storage.Repositories;
 using Medium.Api.Models;
 
@@ -18,7 +19,7 @@ public sealed class StorageService(
   private readonly MinioConfiguration _configuration = configuration;
   private readonly ObjectStorageRepository _objectStorageRepository = objectStorageRepository;
 
-  public async Task<ObjectStorageDto> GetPresignedUploadUrlAsync(
+  public async Task<string> GetPresignedUploadUrlAsync(
       Guid authorId,
       int expirySeconds = 3600,
       CancellationToken cancellationToken = default)
@@ -26,10 +27,10 @@ public sealed class StorageService(
     var objectKey = $"{Guid.NewGuid()}";
 
     var uploadUrl = await _minioClient.PresignedPutObjectAsync(
-        new PresignedPutObjectArgs()
-            .WithBucket(_configuration.BucketName)
-            .WithObject(objectKey)
-            .WithExpiry(expirySeconds));
+      new PresignedPutObjectArgs()
+        .WithBucket(_configuration.BucketName)
+        .WithObject(objectKey)
+        .WithExpiry(expirySeconds));
 
     var objectStorage = new ObjectStorage
     {
@@ -45,29 +46,20 @@ public sealed class StorageService(
     await _objectStorageRepository.AddAsync(objectStorage, cancellationToken);
     await _objectStorageRepository.SaveAsync(cancellationToken);
 
-    return new ObjectStorageDto(
-      objectStorage.Id,
-      objectStorage.ObjectKey,
-      objectStorage.Bucket,
-      objectStorage.MimeType,
-      objectStorage.OriginalName,
-      objectStorage.Size.HasValue ? (int)objectStorage.Size.Value : null,
-      objectStorage.AccessTypes,
-      uploadUrl,
-      objectStorage.CreatedAt
-    );
+    return uploadUrl;
   }
 
   public async Task<string> GetPresignedDownloadUrlAsync(
-      string objectKey,
-      int expirySeconds = 3600,
-      CancellationToken cancellationToken = default)
+    string objectKey,
+    int expirySeconds = 3600,
+    CancellationToken cancellationToken = default
+  )
   {
     return await _minioClient.PresignedGetObjectAsync(
-        new PresignedGetObjectArgs()
-            .WithBucket(_configuration.BucketName)
-            .WithObject(objectKey)
-            .WithExpiry(expirySeconds));
+      new PresignedGetObjectArgs()
+        .WithBucket(_configuration.BucketName)
+        .WithObject(objectKey)
+        .WithExpiry(expirySeconds));
   }
 
   public async Task<ObjectStorageDto?> GetMetadataAsync(
@@ -79,17 +71,7 @@ public sealed class StorageService(
     if (objectStorage is null)
       return null;
 
-    return new ObjectStorageDto(
-      objectStorage.Id,
-      objectStorage.ObjectKey,
-      objectStorage.Bucket,
-      objectStorage.MimeType,
-      objectStorage.OriginalName,
-      objectStorage.Size.HasValue ? (int)objectStorage.Size.Value : null,
-      objectStorage.AccessTypes,
-      null,
-      objectStorage.CreatedAt
-    );
+    return ObjectStorageMapper.ToResponse(objectStorage);
   }
 
   public async Task DeleteAsync(

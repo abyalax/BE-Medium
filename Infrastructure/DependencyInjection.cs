@@ -23,6 +23,7 @@ using Medium.Api.Infrastructure.Nats.Module;
 using Medium.Api.Infrastructure.Scheduler.Module;
 using Medium.Api.Infrastructure.Storage;
 using Medium.Api.Infrastructure.Storage.Module;
+using Medium.Api.Infrastructure.Settings.Module;
 using Medium.Api.Infrastructure.AI;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -34,6 +35,8 @@ public static class DependencyInjection
 {
   public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
   {
+    services.AddSettingsModule(configuration);
+
     // Register lifecycle services first before other infrastructure
     services.AddSingleton<IDbConnectionLifecycle, DbConnectionLifecycle>();
 
@@ -88,7 +91,7 @@ public static class DependencyInjection
           name: "SQL Server",
           tags: readyTags)
         .AddRedis(
-          redisConnectionString: $"{configuration["Redis:Host"]}:{configuration["Redis:Port"]},password={configuration["Redis:Password"]}",
+          redisConnectionString: $"{configuration["AppSettings:Redis:Host"]}:{configuration["AppSettings:Redis:Port"]},password={configuration["AppSettings:Redis:Password"]}",
           name: "Redis Cache",
           tags: readyTags
         )
@@ -97,8 +100,8 @@ public static class DependencyInjection
           setup =>
           {
             setup.AddHost(
-              configuration["Email:Host"]!,
-              int.Parse(configuration["Email:Port"]!)
+              configuration["AppSettings:Email:Host"]!,
+              int.Parse(configuration["AppSettings:Email:Port"] ?? "1025")
             );
           },
           name: "Mailpit SMTP",

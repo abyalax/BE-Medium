@@ -72,7 +72,12 @@ public sealed record PermissionMock(string Code, string Name, string Description
     new(PermissionConstant.Authors.Follow, "Follow authors", "Follow article authors"),
     new(PermissionConstant.Authors.UnFollow, "UnFollow authors", "UnFollow article authors"),
     new(PermissionConstant.Authors.GetProfile, "Read author profiles", "View author profile pages"),
-    new(PermissionConstant.ReadingHistory.Get, "Read history", "View own reading history"),
+
+    new(PermissionConstant.ReadingHistory.Read, "Read Reading history", "View reading history"),
+    new(PermissionConstant.ReadingHistory.ReadOwn, "Read Own Reading history", "View own reading history"),
+    new(PermissionConstant.ReadingHistory.Create, "Create Reading history", "Create own reading history"),
+    new(PermissionConstant.ReadingHistory.Delete, "Delete Reading history", "Delete reading history"),
+    new(PermissionConstant.ReadingHistory.DeleteOwn, "Delete Own Reading history", "Delete own reading history"),
 
     new(PermissionConstant.Comments.Create, "Create comments", "Comment on articles"),
     new(PermissionConstant.Comments.Read, "Read comments", "Read Comment on articles"),

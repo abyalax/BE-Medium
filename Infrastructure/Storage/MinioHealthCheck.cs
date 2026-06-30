@@ -1,14 +1,14 @@
-using Medium.Api.Infrastructure.Settings;
+using Medium.Api.Infrastructure.Settings.Dtos;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 namespace Medium.Api.Infrastructure.Storage;
 
-public class MinioHealthCheck(IMinioClient minioClient, IOptions<AppSettings> settings) : IHealthCheck
+public class MinioHealthCheck(IMinioClient minioClient, IOptions<ApplicationSettings> settings) : IHealthCheck
 {
   private readonly IMinioClient _minioClient = minioClient;
-  private readonly AppSettings _settings = settings.Value;
+  private readonly ApplicationSettings _settings = settings.Value;
 
   public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
   {

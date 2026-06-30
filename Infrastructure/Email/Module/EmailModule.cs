@@ -8,7 +8,7 @@ public static class EmailModule
   public static IServiceCollection AddEmailInfrastructure(this IServiceCollection services, IConfiguration configuration)
   {
     var emailConfiguration = configuration
-      .GetSection("Email")
+      .GetSection("AppSettings:Email")
       .Get<EmailConfiguration>()
       ?? throw new InvalidOperationException("Email configuration is missing.");
 

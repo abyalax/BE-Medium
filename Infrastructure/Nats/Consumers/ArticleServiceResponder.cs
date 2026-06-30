@@ -23,7 +23,7 @@ public class ArticleServiceResponder(
     try
     {
       _logger.LogInformation("Starting ArticleServiceResponder for subject {Subject}", NatsSubjects.ArticleGet);
-      
+
       await _subscriber.SubscribeToRequestAsync<ArticleGetRequest, ArticleGetResponse>(
         NatsSubjects.ArticleGet,
         async request =>
@@ -31,10 +31,10 @@ public class ArticleServiceResponder(
           try
           {
             _logger.LogInformation("Received article.get request for article {ArticleId}", request.ArticleId);
-            
+
             var articleId = Guid.Parse(request.ArticleId);
             var article = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(articleId, linkedCancellationToken);
-            
+
             if (article == null)
             {
               _logger.LogWarning("Article {ArticleId} not found", request.ArticleId);
@@ -43,16 +43,16 @@ public class ArticleServiceResponder(
                 Error = "Article not found"
               };
             }
-            
+
             _logger.LogInformation("Successfully retrieved article {ArticleId}", request.ArticleId);
-            
+
             return new ArticleGetResponse
             {
               Id = article.Id.ToString(),
               Title = article.Title,
               Content = article.Content,
               AuthorId = article.AuthorId.ToString(),
-              AuthorName = article.AuthorName,
+              AuthorName = article.Author.Name,
               Slug = article.Slug,
               Status = article.Status.ToString(),
               PublishedAt = article.PublishedAt,
