@@ -12,6 +12,7 @@ public record ArticleDto(
   string Title,
   string Slug,
   string Content,
+  string? Summary,
   string? CoverImageUrl,
   Guid? ThumbnailId,
   ObjectStorageDto? Thumbnail,

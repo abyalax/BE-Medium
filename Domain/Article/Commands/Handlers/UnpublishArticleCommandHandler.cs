@@ -50,6 +50,7 @@ public class UnpublishArticleCommandHandler : IRequestHandler<UnpublishArticleCo
         article.Title,
         article.Slug,
         article.Content,
+        article.Summary,
         article.CoverImageUrl,
         article.ThumbnailId,
         null,

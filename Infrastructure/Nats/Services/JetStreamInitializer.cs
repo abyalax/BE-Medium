@@ -79,6 +79,32 @@ public static class JetStreamInitializer
         var userStream = await js.CreateStreamAsync(userConfig, cancellationToken: cancellationToken);
         logger.LogInformation("JetStream stream created: {StreamName}", userStream.Info.Config.Name);
       }
+
+      // Initialize ARTICLES stream for AI summarization
+      var articleSubjects = new[]
+      {
+        NatsSubjects.ArticleCreated
+      };
+
+      var articlesConfig = new StreamConfig("ARTICLES", articleSubjects)
+      {
+        Storage = StreamConfigStorage.File,
+        Retention = StreamConfigRetention.Limits,
+        MaxAge = TimeSpan.FromDays(30),
+        Discard = StreamConfigDiscard.Old,
+        NumReplicas = 1
+      };
+
+      try
+      {
+        var existingArticlesStream = await js.GetStreamAsync("ARTICLES", cancellationToken: cancellationToken);
+        logger.LogInformation("JetStream stream already exists: {StreamName}", existingArticlesStream.Info.Config.Name);
+      }
+      catch (NatsJSException)
+      {
+        var articlesStream = await js.CreateStreamAsync(articlesConfig, cancellationToken: cancellationToken);
+        logger.LogInformation("JetStream stream created: {StreamName}", articlesStream.Info.Config.Name);
+      }
     }
     catch (Exception ex)
     {
@@ -176,6 +202,27 @@ public static class JetStreamInitializer
       catch (Exception ex)
       {
         logger.LogWarning(ex, "USER_EVENTS user-logged-in-pull consumer already exists or error: {Message}", ex.Message);
+      }
+
+      // Initialize consumers for ARTICLES stream
+      var articlesStreamName = "ARTICLES";
+
+      var aiSummarizationPullConfig = new ConsumerConfig("ai-summarization-pull")
+      {
+        FilterSubject = NatsSubjects.ArticleCreated,
+        AckPolicy = ConsumerConfigAckPolicy.Explicit,
+        AckWait = TimeSpan.FromMinutes(5),
+        MaxDeliver = 10
+      };
+
+      try
+      {
+        await js.CreateOrUpdateConsumerAsync(articlesStreamName, aiSummarizationPullConfig, cancellationToken: cancellationToken);
+        logger.LogInformation("ARTICLES ai-summarization-pull consumer initialized");
+      }
+      catch (Exception ex)
+      {
+        logger.LogWarning(ex, "ARTICLES ai-summarization-pull consumer already exists or error: {Message}", ex.Message);
       }
     }
     catch (Exception ex)

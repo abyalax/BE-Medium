@@ -12,6 +12,8 @@ public class Article : Entity
 
   public string Content { get; set; } = null!;
 
+  public string? Summary { get; set; }
+
   public string? CoverImageUrl { get; set; }
 
   public Guid? ThumbnailId { get; set; }

@@ -25,6 +25,9 @@ public class ArticleConfiguration : IEntityTypeConfiguration<Article>
     builder.Property(a => a.Content)
         .IsRequired();
 
+    builder.Property(a => a.Summary)
+        .HasMaxLength(1000);
+
     builder.Property(a => a.CoverImageUrl)
         .HasMaxLength(500);
 

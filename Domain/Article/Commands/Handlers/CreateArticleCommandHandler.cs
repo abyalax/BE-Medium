@@ -5,6 +5,7 @@ using Medium.Api.Domain.Article.Repositories;
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Exceptions;
 using Medium.Api.Infrastructure.Nats.Events;
+using Medium.Api.Infrastructure.Nats.Services;
 
 using ArticleModel = Medium.Api.Models.Article;
 
@@ -15,16 +16,19 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
   private readonly ArticleStoreRepository _articleStoreRepository;
   private readonly ArticleQueryRepository _articleQueryRepository;
   private readonly IEventHandlerResolver _eventHandlerResolver;
+  private readonly IJetStreamEventPublisher _jetStreamPublisher;
 
   public CreateArticleCommandHandler(
     ArticleStoreRepository articleStoreRepository,
     ArticleQueryRepository articleQueryRepository,
-    IEventHandlerResolver eventHandlerResolver
+    IEventHandlerResolver eventHandlerResolver,
+    IJetStreamEventPublisher jetStreamPublisher
   )
   {
     _articleStoreRepository = articleStoreRepository;
     _articleQueryRepository = articleQueryRepository;
     _eventHandlerResolver = eventHandlerResolver;
+    _jetStreamPublisher = jetStreamPublisher;
   }
 
   public async Task<ArticleDto> Handle(CreateArticleCommand command, CancellationToken cancellationToken)
@@ -61,8 +65,24 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
       article.Id.ToString(),
       command.AuthorId.ToString(),
       command.Title,
-      slug
+      slug,
+      article.Content
     ), cancellationToken);
+
+    // Publish to JetStream for AI summarization
+    var natsEvent = new ArticleCreatedEvent(
+      article.Id.ToString(),
+      command.AuthorId.ToString(),
+      command.Title,
+      slug,
+      article.Content
+    );
+
+    await _jetStreamPublisher.PublishToStreamAsync(
+      NatsSubjects.ArticleCreated,
+      natsEvent,
+      cancellationToken
+    );
 
     var articleWithTags = await _articleQueryRepository.GetArticleWithAuthorTagsAsync(article.Id, cancellationToken)
       ?? throw new NotFoundException("Article not found");
@@ -74,6 +94,7 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
       articleWithTags.Title,
       articleWithTags.Slug,
       articleWithTags.Content,
+      articleWithTags.Summary,
       articleWithTags.CoverImageUrl,
       articleWithTags.ThumbnailId,
       null,

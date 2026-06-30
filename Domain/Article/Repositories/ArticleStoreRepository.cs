@@ -15,6 +15,11 @@ public class ArticleStoreRepository(ApplicationDbContext context)
     await context.Articles.AddAsync(article, cancellationToken);
   }
 
+  public async Task<ArticleModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+  {
+    return await context.Articles.FindAsync(new object[] { id }, cancellationToken);
+  }
+
   public void Remove(ArticleModel article)
   {
     context.Articles.Remove(article);

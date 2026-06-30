@@ -22,12 +22,15 @@ public static class NatsModule
     services.AddScoped<INatsPublisher, NatsPublisher>();
     services.AddScoped<IJetStreamEventPublisher, JetStreamEventPublisher>();
     services.AddScoped<INatsSubscriber, NatsSubscriber>();
+    services.AddScoped<IArticleGatewayService, ArticleGatewayService>();
 
     // JetStream consumers as scoped
     services.AddScoped<IJetStreamPushConsumer, JetStreamPushConsumer>();
     services.AddScoped<IJetStreamPullConsumer, JetStreamPullConsumer>();
 
     services.AddScoped<IEventHandler<ArticlePublishedEvent>, ArticlePublishedEventHandler>();
+    services.AddScoped<IEventHandler<ArticlePublishedEvent>, AnalyticsServiceHandler>();
+    services.AddScoped<IEventHandler<ArticlePublishedEvent>, SearchIndexServiceHandler>();
     services.AddScoped<IEventHandler<CommentCreatedEvent>, CommentCreatedEventHandler>();
     services.AddScoped<IEventHandler<UserFollowedEvent>, UserFollowedEventHandler>();
 
@@ -35,6 +38,9 @@ public static class NatsModule
     services.AddScoped<UserRegisteredPushConsumer>();
     services.AddScoped<UserLoggedInPullConsumer>();
     services.AddScoped<EmailServiceResponder>();
+    services.AddScoped<ArticlePublishedPushConsumer>();
+    services.AddScoped<ArticleServiceResponder>();
+    services.AddScoped<AiSummarizationWorker>();
 
     return services;
   }

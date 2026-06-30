@@ -36,6 +36,7 @@ public class ArchiveArticleCommandHandler(
       articleWithAuthor.Title,
       articleWithAuthor.Slug,
       articleWithAuthor.Content,
+      articleWithAuthor.Summary,
       articleWithAuthor.CoverImageUrl,
       articleWithAuthor.ThumbnailId,
       null,

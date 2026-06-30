@@ -87,6 +87,42 @@ public sealed class ApplicationLifecycleService(IServiceProvider serviceProvider
       {
         _logger.LogWarning(ex, "Failed to start EmailServiceResponder");
       }
+
+      try
+      {
+        var articlePublishedConsumer = _scope.ServiceProvider.GetRequiredService<ArticlePublishedPushConsumer>();
+        _consumerServices.Add(articlePublishedConsumer);
+        _ = Task.Run(() => articlePublishedConsumer.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started ArticlePublishedPushConsumer");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start ArticlePublishedPushConsumer");
+      }
+
+      try
+      {
+        var articleServiceResponder = _scope.ServiceProvider.GetRequiredService<ArticleServiceResponder>();
+        _consumerServices.Add(articleServiceResponder);
+        _ = Task.Run(() => articleServiceResponder.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started ArticleServiceResponder");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start ArticleServiceResponder");
+      }
+
+      try
+      {
+        var aiSummarizationWorker = _scope.ServiceProvider.GetRequiredService<AiSummarizationWorker>();
+        _consumerServices.Add(aiSummarizationWorker);
+        _ = Task.Run(() => aiSummarizationWorker.StartAsync(cancellationToken), cancellationToken);
+        _logger.LogInformation("Started AiSummarizationWorker");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning(ex, "Failed to start AiSummarizationWorker");
+      }
     }
     catch (Exception ex)
     {
