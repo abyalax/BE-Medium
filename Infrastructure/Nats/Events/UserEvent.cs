@@ -1,17 +1,27 @@
 using System.Text.Json.Serialization;
 
-using Medium.Api.Infrastructure.Events;
-
 namespace Medium.Api.Infrastructure.Nats.Events;
 
-public record UserRegisteredEvent(
-  [property: JsonPropertyName("userId")] Guid UserId,
-  [property: JsonPropertyName("email")] string Email,
-  [property: JsonPropertyName("username")] string Username
-) : DomainEvent;
+public class UserRegisteredEvent
+{
+  [JsonPropertyName("userId")]
+  public Guid UserId { get; set; }
+  
+  [JsonPropertyName("email")]
+  public string Email { get; set; } = string.Empty;
+  
+  [JsonPropertyName("username")]
+  public string Username { get; set; } = string.Empty;
+}
 
-public record UserLoggedInEvent(
-  [property: JsonPropertyName("userId")] Guid UserId,
-  [property: JsonPropertyName("email")] string Email,
-  [property: JsonPropertyName("loginTime")] DateTime LoginTime
-) : DomainEvent;
+public class UserLoggedInEvent
+{
+  [JsonPropertyName("userId")]
+  public Guid UserId { get; set; }
+  
+  [JsonPropertyName("email")]
+  public string Email { get; set; } = string.Empty;
+  
+  [JsonPropertyName("loginTime")]
+  public DateTime LoginTime { get; set; }
+}

@@ -23,7 +23,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
     _publisher = publisher;
   }
 
-  public async Task<CommentResponse> Handle(CreateCommentCommand command, CancellationToken cancellationToken = default)
+  public async Task<CommentResponse> Handle(CreateCommentCommand command, CancellationToken cancellationToken)
   {
     var comment = new CommentModel
     {
@@ -36,13 +36,14 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
     await _commentStoreRepository.AddAsync(comment, cancellationToken);
     await _commentStoreRepository.SaveChangesAsync(cancellationToken);
 
-    var @event = new CommentCreatedEvent(
-        comment.Id.ToString(),
-        comment.ArticleId.ToString(),
-        comment.UserId.ToString(),
-        comment.Content,
-        comment.CreatedAt
-    );
+    var @event = new CommentCreatedEvent
+    {
+      CommentId = comment.Id.ToString(),
+      ArticleId = comment.ArticleId.ToString(),
+      UserId = comment.UserId.ToString(),
+      Content = comment.Content,
+      CreatedAt = comment.CreatedAt
+    };
 
     await _publisher.PublishAsync(NatsSubjects.CommentCreated, @event);
 

@@ -2,40 +2,86 @@ using System.Text.Json.Serialization;
 
 namespace Medium.Api.Infrastructure.Nats.Events;
 
-public record ArticlePublishedEvent(
-    [property: JsonPropertyName("id")] string ArticleId,
-    [property: JsonPropertyName("authorId")] string AuthorId,
-    [property: JsonPropertyName("title")] string Title,
-    [property: JsonPropertyName("publishedAt")] DateTime? PublishedAt
-);
+public class ArticlePublishedEvent
+{
+  [JsonPropertyName("id")]
+  public string ArticleId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("authorId")]
+  public string AuthorId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("title")]
+  public string Title { get; set; } = string.Empty;
+  
+  [JsonPropertyName("publishedAt")]
+  public DateTime? PublishedAt { get; set; }
+}
 
-public record ArticleCreatedEvent(
-  [property: JsonPropertyName("id")] string ArticleId,
-  [property: JsonPropertyName("authorId")] string AuthorId,
-  [property: JsonPropertyName("title")] string Title,
-  [property: JsonPropertyName("slug")] string Slug,
-  [property: JsonPropertyName("content")] string Content
-);
+public class ArticleCreatedEvent
+{
+  [JsonPropertyName("id")]
+  public string ArticleId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("authorId")]
+  public string AuthorId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("title")]
+  public string Title { get; set; } = string.Empty;
+  
+  [JsonPropertyName("slug")]
+  public string Slug { get; set; } = string.Empty;
+  
+  [JsonPropertyName("content")]
+  public string Content { get; set; } = string.Empty;
+}
 
-public record ArticleUpdatedEvent(
-  [property: JsonPropertyName("id")] string ArticleId,
-  [property: JsonPropertyName("authorId")] string AuthorId,
-  [property: JsonPropertyName("title")] string Title
-);
+public class ArticleUpdatedEvent
+{
+  [JsonPropertyName("id")]
+  public string ArticleId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("authorId")]
+  public string AuthorId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("title")]
+  public string Title { get; set; } = string.Empty;
+}
 
-public record ArticleGetRequest(
-  [property: JsonPropertyName("articleId")] string ArticleId
-);
+public class ArticleGetRequest
+{
+  [JsonPropertyName("articleId")]
+  public string ArticleId { get; set; } = string.Empty;
+}
 
-public record ArticleGetResponse(
-  [property: JsonPropertyName("id")] string? Id,
-  [property: JsonPropertyName("title")] string? Title,
-  [property: JsonPropertyName("content")] string? Content,
-  [property: JsonPropertyName("authorId")] string? AuthorId,
-  [property: JsonPropertyName("authorName")] string? AuthorName,
-  [property: JsonPropertyName("slug")] string? Slug,
-  [property: JsonPropertyName("status")] string? Status,
-  [property: JsonPropertyName("publishedAt")] DateTime? PublishedAt,
-  [property: JsonPropertyName("createdAt")] DateTime? CreatedAt,
-  [property: JsonPropertyName("error")] string? Error
-);
+public class ArticleGetResponse
+{
+  [JsonPropertyName("id")]
+  public string? Id { get; set; }
+  
+  [JsonPropertyName("title")]
+  public string? Title { get; set; }
+  
+  [JsonPropertyName("content")]
+  public string? Content { get; set; }
+  
+  [JsonPropertyName("authorId")]
+  public string? AuthorId { get; set; }
+  
+  [JsonPropertyName("authorName")]
+  public string? AuthorName { get; set; }
+  
+  [JsonPropertyName("slug")]
+  public string? Slug { get; set; }
+  
+  [JsonPropertyName("status")]
+  public string? Status { get; set; }
+  
+  [JsonPropertyName("publishedAt")]
+  public DateTime? PublishedAt { get; set; }
+  
+  [JsonPropertyName("createdAt")]
+  public DateTime? CreatedAt { get; set; }
+  
+  [JsonPropertyName("error")]
+  public string? Error { get; set; }
+}

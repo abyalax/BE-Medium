@@ -12,58 +12,58 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     builder.ToTable("users");
 
     builder.Property(u => u.Name)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.Property(u => u.Email)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.HasIndex(u => u.Email).IsUnique();
 
     builder.Property(u => u.Password)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.Property(u => u.Bio)
-        .HasMaxLength(1000);
+      .HasMaxLength(1000);
 
     builder.Property(u => u.AvatarUrl)
-        .HasMaxLength(500);
+      .HasMaxLength(500);
 
     builder.HasMany(u => u.UserRoles)
-        .WithOne()
-        .HasForeignKey(ur => ur.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne()
+      .HasForeignKey(ur => ur.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(u => u.Articles)
-        .WithOne(a => a.Author)
-        .HasForeignKey(a => a.AuthorId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithOne(a => a.Author)
+      .HasForeignKey(a => a.AuthorId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasMany(u => u.Comments)
-        .WithOne(c => c.User)
-        .HasForeignKey(c => c.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(c => c.User)
+      .HasForeignKey(c => c.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(u => u.Bookmarks)
-        .WithOne(b => b.User)
-        .HasForeignKey(b => b.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(b => b.User)
+      .HasForeignKey(b => b.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(u => u.Followers)
-        .WithOne(f => f.Following)
-        .HasForeignKey(f => f.FollowingId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithOne(f => f.Following)
+      .HasForeignKey(f => f.FollowingId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasMany(u => u.Following)
-        .WithOne(f => f.Follower)
-        .HasForeignKey(f => f.FollowerId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithOne(f => f.Follower)
+      .HasForeignKey(f => f.FollowerId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasMany(u => u.ReadingHistories)
-        .WithOne(rh => rh.User)
-        .HasForeignKey(rh => rh.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(rh => rh.User)
+      .HasForeignKey(rh => rh.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

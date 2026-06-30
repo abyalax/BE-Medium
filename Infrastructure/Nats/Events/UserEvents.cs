@@ -2,8 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace Medium.Api.Infrastructure.Nats.Events;
 
-public record UserFollowedEvent(
-    [property: JsonPropertyName("followerId")] string FollowerId,
-    [property: JsonPropertyName("followingId")] string FollowingId,
-    [property: JsonPropertyName("followedAt")] DateTime FollowedAt
-);
+public class UserFollowedEvent
+{
+  [JsonPropertyName("followerId")]
+  public string FollowerId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("followingId")]
+  public string FollowingId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("followedAt")]
+  public DateTime FollowedAt { get; set; }
+}

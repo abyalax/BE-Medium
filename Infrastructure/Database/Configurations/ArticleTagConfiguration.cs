@@ -14,13 +14,13 @@ public class ArticleTagConfiguration : IEntityTypeConfiguration<ArticleTag>
     builder.HasKey(at => new { at.ArticleId, at.TagId });
 
     builder.HasOne(at => at.Article)
-        .WithMany(a => a.ArticleTags)
-        .HasForeignKey(at => at.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(a => a.ArticleTags)
+      .HasForeignKey(at => at.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(at => at.Tag)
-        .WithMany(t => t.ArticleTags)
-        .HasForeignKey(at => at.TagId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(t => t.ArticleTags)
+      .HasForeignKey(at => at.TagId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

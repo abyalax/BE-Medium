@@ -43,11 +43,12 @@ public class FollowService(FollowStoreRepository followStoreRepository, FollowQu
     await _followStoreRepository.AddAsync(follow, cancellationToken);
     await _followStoreRepository.SaveChangesAsync(cancellationToken);
 
-    var @event = new UserFollowedEvent(
-        follow.FollowerId.ToString(),
-        follow.FollowingId.ToString(),
-        follow.CreatedAt
-    );
+    var @event = new UserFollowedEvent
+    {
+        FollowerId = follow.FollowerId.ToString(),
+        FollowingId = follow.FollowingId.ToString(),
+        FollowedAt = follow.CreatedAt
+    };
 
     await _publisher.PublishAsync(NatsSubjects.UserFollowed, @event);
 

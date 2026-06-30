@@ -52,3 +52,6 @@ appsettings.Local.json
 coverage/
 *.coverage
 *.coveragexml
+
+# Model ONNX
+/Assets/Model

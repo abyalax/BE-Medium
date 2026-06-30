@@ -14,13 +14,13 @@ public class FollowConfiguration : IEntityTypeConfiguration<Follow>
     builder.HasIndex(f => new { f.FollowerId, f.FollowingId }).IsUnique();
 
     builder.HasOne(f => f.Follower)
-        .WithMany(u => u.Following)
-        .HasForeignKey(f => f.FollowerId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithMany(u => u.Following)
+      .HasForeignKey(f => f.FollowerId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasOne(f => f.Following)
-        .WithMany(u => u.Followers)
-        .HasForeignKey(f => f.FollowingId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithMany(u => u.Followers)
+      .HasForeignKey(f => f.FollowingId)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }

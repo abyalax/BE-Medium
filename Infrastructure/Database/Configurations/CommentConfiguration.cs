@@ -12,16 +12,16 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
     builder.ToTable("comments");
 
     builder.Property(c => c.Content)
-        .IsRequired();
+      .IsRequired();
 
     builder.HasOne(c => c.User)
-        .WithMany(u => u.Comments)
-        .HasForeignKey(c => c.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(u => u.Comments)
+      .HasForeignKey(c => c.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(c => c.Article)
-        .WithMany(a => a.Comments)
-        .HasForeignKey(c => c.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(a => a.Comments)
+      .HasForeignKey(c => c.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

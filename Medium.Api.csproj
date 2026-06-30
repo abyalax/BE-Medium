@@ -17,12 +17,15 @@
     <PackageReference Include="Coravel" Version="6.0.*" />
     <PackageReference Include="MailKit" Version="4.17.*" />
     <PackageReference Include="MediatR" Version="12.0.*" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.14.*" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.14.*">
+      <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PackageReference>
     <PackageReference Include="Minio" Version="7.0.*" />
 
     <PackageReference Include="NATS.Client.Core" Version="2.8.*" />
     <PackageReference Include="NATS.Client.Hosting" Version="2.8.*" />
     <PackageReference Include="NATS.Client.JetStream" Version="2.8.*" />
+    <PackageReference Include="NATS.Client.Serializers.Json" Version="2.8.*" />
 
     <PackageReference Include="RazorLight" Version="2.3.*" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.*" />

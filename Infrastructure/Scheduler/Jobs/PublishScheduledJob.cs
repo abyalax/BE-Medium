@@ -38,12 +38,13 @@ public class PublishScheduledJob(
         article.PublishedAt = DateTime.UtcNow;
         await articleStoreRepository.SaveChangesAsync(cancellationToken);
         // Build event payload matching the standard format
-        var @event = new ArticlePublishedEvent(
-            article.Id.ToString(),
-            article.AuthorId.ToString(),
-            article.Title,
-            DateTime.UtcNow
-        );
+        var @event = new ArticlePublishedEvent
+        {
+            ArticleId = article.Id.ToString(),
+            AuthorId = article.AuthorId.ToString(),
+            Title = article.Title,
+            PublishedAt = DateTime.UtcNow
+        };
         // Publish event to NATS JetStream instead of standard core NATS publisher
         await jetStreamPublisher.PublishToStreamAsync(NatsSubjects.ArticlePublished, @event, cancellationToken);
 

@@ -14,13 +14,13 @@ public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>
     builder.HasIndex(b => new { b.UserId, b.ArticleId }).IsUnique();
 
     builder.HasOne(b => b.User)
-        .WithMany(u => u.Bookmarks)
-        .HasForeignKey(b => b.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(u => u.Bookmarks)
+      .HasForeignKey(b => b.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(b => b.Article)
-        .WithMany(a => a.Bookmarks)
-        .HasForeignKey(b => b.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(a => a.Bookmarks)
+      .HasForeignKey(b => b.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

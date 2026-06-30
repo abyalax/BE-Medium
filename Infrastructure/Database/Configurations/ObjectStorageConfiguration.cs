@@ -13,41 +13,41 @@ public class ObjectStorageConfiguration : IEntityTypeConfiguration<ObjectStorage
     builder.ToTable("object_storages");
 
     builder.Property(a => a.Bucket)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.Property(a => a.ObjectKey)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.Property(a => a.MimeType)
-        .IsRequired()
-        .HasMaxLength(100);
+      .IsRequired()
+      .HasMaxLength(100);
 
     builder.Property(a => a.OriginalName)
-        .IsRequired()
-        .HasMaxLength(150);
+      .IsRequired()
+      .HasMaxLength(150);
 
     builder.Property(a => a.Size)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.Property(a => a.ArticleId)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.Property(a => a.AccessTypes)
-        .HasConversion(
-            v => v.ToString(),
-            v => (FileAccessType)Enum.Parse(typeof(FileAccessType), v));
+      .HasConversion(
+        v => v.ToString(),
+        v => (FileAccessType)Enum.Parse(typeof(FileAccessType), v));
 
     builder.HasOne(a => a.Author)
-        .WithMany(u => u.ObjectStorages)
-        .HasForeignKey(a => a.AuthorId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithMany(u => u.ObjectStorages)
+      .HasForeignKey(a => a.AuthorId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasOne(a => a.Article)
-        .WithMany(a => a.ContentImages)
-        .HasForeignKey(a => a.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithMany(a => a.ContentImages)
+      .HasForeignKey(a => a.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasIndex(a => a.ObjectKey).IsUnique();
   }

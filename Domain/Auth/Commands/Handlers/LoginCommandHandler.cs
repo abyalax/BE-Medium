@@ -37,7 +37,13 @@ public class LoginCommandHandler(
         user.AvatarUrl
     );
 
-    await eventHandlerResolver.HandleAsync(new DomainUserLoggedInEvent(user.Id, user.Email), cancellationToken);
+    await eventHandlerResolver.HandleAsync(new DomainUserLoggedInEvent
+    {
+      UserId = user.Id,
+      Email = user.Email
+    },
+      cancellationToken
+    );
 
     return response;
   }

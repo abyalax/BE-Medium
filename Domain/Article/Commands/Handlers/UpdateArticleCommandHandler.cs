@@ -61,11 +61,12 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
 
     // Publish ArticleUpdatedEvent
     await _eventHandlerResolver.HandleAsync(
-      new ArticleUpdatedEvent(
-        command.ArticleId.ToString(),
-        command.UserId.ToString(),
-        command.Title ?? "Updated"
-      ),
+      new ArticleUpdatedEvent
+      {
+        ArticleId = command.ArticleId.ToString(),
+        AuthorId = command.UserId.ToString(),
+        Title = command.Title ?? "Updated"
+      },
       cancellationToken
     );
 

@@ -12,19 +12,19 @@ public class NewsLetterSubscriptionConfiguration : IEntityTypeConfiguration<News
     builder.ToTable("news_letter_subscriptions");
 
     builder.Property(nls => nls.Email)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.HasIndex(nls => nls.Email).IsUnique();
 
     builder.Property(nls => nls.IsActive)
-        .IsRequired()
-        .HasDefaultValue(true);
+      .IsRequired()
+      .HasDefaultValue(true);
 
     builder.Property(nls => nls.SubscribedAt)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.Property(nls => nls.UnsubscribedAt)
-        .IsRequired(false);
+      .IsRequired(false);
   }
 }

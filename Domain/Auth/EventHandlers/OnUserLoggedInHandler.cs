@@ -16,7 +16,12 @@ public class OnUserLoggedInHandler(
 
     try
     {
-      var natsEvent = new NatsUserLoggedInEvent(@event.UserId, @event.Email, DateTime.UtcNow);
+      var natsEvent = new NatsUserLoggedInEvent
+      {
+        UserId = @event.UserId,
+        Email = @event.Email,
+        LoginTime = DateTime.UtcNow
+      };
       await jsPublisher.PublishToStreamAsync("user.logged-in", natsEvent, cancellationToken);
     }
     catch (Exception ex)

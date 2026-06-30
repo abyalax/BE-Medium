@@ -38,34 +38,35 @@ public class ArticleServiceResponder(
             if (article == null)
             {
               _logger.LogWarning("Article {ArticleId} not found", request.ArticleId);
-              return new ArticleGetResponse(
-                null, null, null, null, null, null, null, null, null,
-                "Article not found"
-              );
+              return new ArticleGetResponse
+              {
+                Error = "Article not found"
+              };
             }
             
             _logger.LogInformation("Successfully retrieved article {ArticleId}", request.ArticleId);
             
-            return new ArticleGetResponse(
-              article.Id.ToString(),
-              article.Title,
-              article.Content,
-              article.AuthorId.ToString(),
-              article.AuthorName,
-              article.Slug,
-              article.Status.ToString(),
-              article.PublishedAt,
-              article.CreatedAt,
-              null
-            );
+            return new ArticleGetResponse
+            {
+              Id = article.Id.ToString(),
+              Title = article.Title,
+              Content = article.Content,
+              AuthorId = article.AuthorId.ToString(),
+              AuthorName = article.AuthorName,
+              Slug = article.Slug,
+              Status = article.Status.ToString(),
+              PublishedAt = article.PublishedAt,
+              CreatedAt = article.CreatedAt,
+              Error = null
+            };
           }
           catch (Exception ex)
           {
             _logger.LogError(ex, "Error processing article.get request for article {ArticleId}", request.ArticleId);
-            return new ArticleGetResponse(
-              null, null, null, null, null, null, null, null, null,
-              $"Error: {ex.Message}"
-            );
+            return new ArticleGetResponse
+            {
+              Error = $"Error: {ex.Message}"
+            };
           }
         },
         linkedCancellationToken

@@ -61,22 +61,24 @@ public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand,
       await _articleStoreRepository.SaveChangesAsync(cancellationToken);
     }
 
-    await _eventHandlerResolver.HandleAsync(new ArticleCreatedEvent(
-      article.Id.ToString(),
-      command.AuthorId.ToString(),
-      command.Title,
-      slug,
-      article.Content
-    ), cancellationToken);
+    await _eventHandlerResolver.HandleAsync(new ArticleCreatedEvent
+    {
+      ArticleId = article.Id.ToString(),
+      AuthorId = command.AuthorId.ToString(),
+      Title = command.Title,
+      Slug = slug,
+      Content = article.Content
+    }, cancellationToken);
 
     // Publish to JetStream for AI summarization
-    var natsEvent = new ArticleCreatedEvent(
-      article.Id.ToString(),
-      command.AuthorId.ToString(),
-      command.Title,
-      slug,
-      article.Content
-    );
+    var natsEvent = new ArticleCreatedEvent
+    {
+      ArticleId = article.Id.ToString(),
+      AuthorId = command.AuthorId.ToString(),
+      Title = command.Title,
+      Slug = slug,
+      Content = article.Content
+    };
 
     await _jetStreamPublisher.PublishToStreamAsync(
       NatsSubjects.ArticleCreated,

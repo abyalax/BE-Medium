@@ -48,12 +48,13 @@ public class PublishArticleCommandHandler(
 
       await _articleStoreRepository.SaveChangesAsync(cancellationToken);
 
-      var natsEvent = new ArticlePublishedEvent(
-        article.Id.ToString(),
-        article.AuthorId.ToString(),
-        article.Title,
-        article.PublishedAt
-      );
+      var natsEvent = new ArticlePublishedEvent
+      {
+        ArticleId = article.Id.ToString(),
+        AuthorId = article.AuthorId.ToString(),
+        Title = article.Title,
+        PublishedAt = article.PublishedAt
+      };
 
       await jetStreamPublisher.PublishToStreamAsync(
         NatsSubjects.ArticlePublished,

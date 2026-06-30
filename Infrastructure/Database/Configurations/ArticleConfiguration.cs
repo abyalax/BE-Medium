@@ -13,74 +13,74 @@ public class ArticleConfiguration : IEntityTypeConfiguration<Article>
     builder.ToTable("articles");
 
     builder.Property(a => a.Title)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.Property(a => a.Slug)
-        .IsRequired()
-        .HasMaxLength(255);
+      .IsRequired()
+      .HasMaxLength(255);
 
     builder.HasIndex(a => a.Slug).IsUnique();
 
     builder.Property(a => a.Content)
-        .IsRequired();
+      .IsRequired();
 
     builder.Property(a => a.Summary)
-        .HasMaxLength(1000);
+      .HasMaxLength(1000);
 
     builder.Property(a => a.CoverImageUrl)
-        .HasMaxLength(500);
+      .HasMaxLength(500);
 
     builder.Property(a => a.ThumbnailId)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.HasOne(a => a.Thumbnail)
-        .WithMany()
-        .HasForeignKey(a => a.ThumbnailId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithMany()
+      .HasForeignKey(a => a.ThumbnailId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasMany(a => a.ContentImages)
-        .WithOne(os => os.Article)
-        .HasForeignKey(os => os.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(os => os.Article)
+      .HasForeignKey(os => os.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.Property(a => a.Status)
-        .HasConversion(
-            v => v.ToString(),
-            v => (ArticleStatus)Enum.Parse(typeof(ArticleStatus), v));
+      .HasConversion(
+        v => v.ToString(),
+        v => (ArticleStatus)Enum.Parse(typeof(ArticleStatus), v));
 
     builder.Property(a => a.PublishedAt)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.Property(a => a.ScheduledAt)
-        .IsRequired(false);
+      .IsRequired(false);
 
     builder.Property(a => a.ViewCount)
-        .HasDefaultValue(0);
+      .HasDefaultValue(0);
 
     builder.HasOne(a => a.Author)
-        .WithMany(u => u.Articles)
-        .HasForeignKey(a => a.AuthorId)
-        .OnDelete(DeleteBehavior.Restrict);
+      .WithMany(u => u.Articles)
+      .HasForeignKey(a => a.AuthorId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasMany(a => a.ArticleTags)
-        .WithOne(at => at.Article)
-        .HasForeignKey(at => at.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(at => at.Article)
+      .HasForeignKey(at => at.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(a => a.Comments)
-        .WithOne(c => c.Article)
-        .HasForeignKey(c => c.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(c => c.Article)
+      .HasForeignKey(c => c.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(a => a.Bookmarks)
-        .WithOne(b => b.Article)
-        .HasForeignKey(b => b.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(b => b.Article)
+      .HasForeignKey(b => b.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(a => a.ReadingHistories)
-        .WithOne(rh => rh.Article)
-        .HasForeignKey(rh => rh.ArticleId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(rh => rh.Article)
+      .HasForeignKey(rh => rh.ArticleId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

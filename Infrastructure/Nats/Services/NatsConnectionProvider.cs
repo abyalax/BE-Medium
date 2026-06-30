@@ -1,6 +1,7 @@
 using Medium.Api.Infrastructure.Interface;
 
 using NATS.Client.Core;
+using NATS.Client.Serializers.Json;
 
 namespace Medium.Api.Infrastructure.Nats.Services;
 
@@ -20,7 +21,11 @@ public class NatsConnectionProvider(IConfiguration configuration, ILogger<NatsCo
     var url = configuration["Nats:Url"] ?? throw new InvalidOperationException("Nats URL is required");
     logger.LogInformation("Connecting to NATS at {Url}...", url);
 
-    var opts = NatsOpts.Default with { Url = url };
+    var opts = NatsOpts.Default with
+    {
+      Url = url,
+      SerializerRegistry = NatsJsonSerializerRegistry.Default
+    };
     _connection = new NatsConnection(opts);
 
     await _connection.ConnectAsync();

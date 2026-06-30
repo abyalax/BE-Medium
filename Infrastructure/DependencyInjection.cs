@@ -23,6 +23,7 @@ using Medium.Api.Infrastructure.Nats.Module;
 using Medium.Api.Infrastructure.Scheduler.Module;
 using Medium.Api.Infrastructure.Storage;
 using Medium.Api.Infrastructure.Storage.Module;
+using Medium.Api.Infrastructure.AI;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -40,6 +41,7 @@ public static class DependencyInjection
     services.AddEmailInfrastructure(configuration);
     services.AddMinioInfrastructure(configuration);
     services.AddRedisInfrastructure(configuration);
+    services.AddAIInfrastructure(configuration);
 
     services.AddCoravelInfrastructure();
     services.AddEventHandlers();

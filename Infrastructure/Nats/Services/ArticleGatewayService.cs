@@ -19,52 +19,52 @@ public class ArticleGatewayService(
     try
     {
       _logger.LogInformation("API Gateway: Requesting article {ArticleId} via NATS", articleId);
-      
-      var request = new ArticleGetRequest(articleId);
-      
+
+      var request = new ArticleGetRequest { ArticleId = articleId };
+
       // Use timeout for the request-reply pattern
       using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
       using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-        cancellationToken, 
+        cancellationToken,
         timeoutCts.Token
       );
-      
+
       var response = await _natsPublisher.RequestAsync<ArticleGetRequest, ArticleGetResponse>(
         NatsSubjects.ArticleGet,
         request,
         linkedCts.Token
       );
-      
+
       if (response == null)
       {
         _logger.LogWarning("API Gateway: No response received for article {ArticleId}", articleId);
         return null;
       }
-      
+
       if (!string.IsNullOrEmpty(response.Error))
       {
         _logger.LogWarning("API Gateway: Error response for article {ArticleId}: {Error}", articleId, response.Error);
         return response;
       }
-      
+
       _logger.LogInformation("API Gateway: Successfully received article {ArticleId}", articleId);
       return response;
     }
     catch (OperationCanceledException)
     {
       _logger.LogWarning("API Gateway: Request timeout for article {ArticleId}", articleId);
-      return new ArticleGetResponse(
-        null, null, null, null, null, null, null, null, null,
-        "Request timeout"
-      );
+      return new ArticleGetResponse
+      {
+        Error = "request timeout"
+      };
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "API Gateway: Error requesting article {ArticleId}", articleId);
-      return new ArticleGetResponse(
-        null, null, null, null, null, null, null, null, null,
-        $"Error: {ex.Message}"
-      );
+      return new ArticleGetResponse
+      {
+        Error = $"Error: {ex.Message}"
+      };
     }
   }
 }

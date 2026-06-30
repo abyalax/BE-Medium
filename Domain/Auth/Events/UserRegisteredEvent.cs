@@ -2,4 +2,9 @@ using Medium.Api.Infrastructure.Events;
 
 namespace Medium.Api.Domain.Auth.Events;
 
-public record UserRegisteredEvent(Guid UserId, string Email, string Name) : DomainEvent;
+public class UserRegisteredEvent : DomainEvent
+{
+  public Guid UserId { get; set; }
+  public string Email { get; set; } = string.Empty;
+  public string Name { get; set; } = string.Empty;
+}

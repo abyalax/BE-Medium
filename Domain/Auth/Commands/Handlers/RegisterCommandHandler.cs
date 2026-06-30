@@ -80,14 +80,31 @@ public class RegisterCommandHandler(
     );
 
     // Publish event to legacy internal event handler
-    await eventHandlerResolver.HandleAsync(new DomainUserRegisteredEvent(user.Id, user.Email, user.Name), cancellationToken);
+    await eventHandlerResolver.HandleAsync(new DomainUserRegisteredEvent
+    {
+      Id = user.Id,
+      Name = user.Name,
+      Email = user.Email,
+    },
+      cancellationToken
+    );
 
     // Publish user registered event to NATS JetStream
-    var natsEvent = new NatsUserRegisteredEvent(user.Id, user.Email, user.Name);
+    var natsEvent = new NatsUserRegisteredEvent
+    {
+      UserId = user.Id,
+      Email = user.Email,
+      Username = user.Name
+    };
     await jsPublisher.PublishToStreamAsync("user.registered", natsEvent, cancellationToken);
 
     // Send welcome email via request-reply pattern
-    var emailRequest = new NatsSendWelcomeEmailRequest(user.Id, user.Email, user.Name);
+    var emailRequest = new NatsSendWelcomeEmailRequest
+    {
+      UserId = user.Id,
+      Username = user.Name,
+      Email = user.Email
+    };
     try
     {
       var emailResponse = await natsPublisher.RequestAsync<NatsSendWelcomeEmailRequest, NatsSendWelcomeEmailResponse>("email.send-welcome", emailRequest, cancellationToken);

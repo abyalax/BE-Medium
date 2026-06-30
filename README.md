@@ -111,6 +111,39 @@ dotnet clean
 dotnet format
 ```
 
+## AI Summarization Model Setup
+
+This project utilizes the **Phi-3-mini-4k-instruct** ONNX model. Due to its large size, the model files are excluded from Git and must be downloaded manually.
+
+### Download Model
+Download all files from the official Hugging Face repository:
+👉 [Microsoft Phi-3-mini-4k-instruct-onnx (CUDA INT4)](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx/tree/main/cuda/cuda-int4-rtn-block-32)
+
+### Directory Structure
+Place the downloaded files into the `Assets/Model` directory exactly as shown below:
+
+```
+└── Assets/
+    └── Model/
+        ├── added_tokens.json                                        306 Bytes
+        ├── config.json                                              919 Bytes
+        ├── configuration_phi3.py                                    10.4 kB
+        ├── genai_config.json                                        1.74 kB
+        ├── phi3-mini-4k-instruct-cuda-int4-rtn-block-32.onnx        223 kB
+        ├── phi3-mini-4k-instruct-cuda-int4-rtn-block-32.onnx.data   2.29 GB
+        ├── special_tokens_map.json                                  599 Bytes
+        ├── tokenizer_config.json                                    1.94 MB
+        ├── tokenizer.json                                           500 kB
+        └── tokenizer.model                                          3.44 kB
+```
+> ⚠️ **Note:** Ensure `Assets/Model/` is added to your `.gitignore` to prevent pushing large binary files to GitHub.
+
+### Download CUDA 12.8 Toolkit
+https://developer.nvidia.com/cuda-12-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local
+
+### Download cuDNN 9.23.2
+https://developer.nvidia.com/cudnn-downloads
+
 ## API Testing with Bruno
 
 The project includes a `bruno/` directory containing all API collections required for testing and development.
@@ -120,8 +153,8 @@ The project includes a `bruno/` directory containing all API collections require
 1. Open Bruno.
 2. Select **Open Collection** or **Import Collection**.
 3. Navigate to the project's `bruno/` folder.
-4. Import the collection directly from that directory.
+4. Import the colln directly from that directory.
 
 No additional setup is required. The collection is maintained within the repository and should stay synchronized with the available API endpoints.
 
-_Last Updated 24 Juny 2026_
+_Last Updated 30 Juny 2026_

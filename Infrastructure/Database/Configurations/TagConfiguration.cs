@@ -12,18 +12,18 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
     builder.ToTable("tags");
 
     builder.Property(t => t.Name)
-        .IsRequired()
-        .HasMaxLength(100);
+      .IsRequired()
+      .HasMaxLength(100);
 
     builder.Property(t => t.Slug)
-        .IsRequired()
-        .HasMaxLength(100);
+      .IsRequired()
+      .HasMaxLength(100);
 
     builder.HasIndex(t => t.Slug).IsUnique();
 
     builder.HasMany(t => t.ArticleTags)
-        .WithOne(at => at.Tag)
-        .HasForeignKey(at => at.TagId)
-        .OnDelete(DeleteBehavior.Cascade);
+      .WithOne(at => at.Tag)
+      .HasForeignKey(at => at.TagId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

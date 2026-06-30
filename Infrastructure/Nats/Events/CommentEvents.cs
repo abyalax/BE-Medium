@@ -2,10 +2,20 @@ using System.Text.Json.Serialization;
 
 namespace Medium.Api.Infrastructure.Nats.Events;
 
-public record CommentCreatedEvent(
-    [property: JsonPropertyName("id")] string CommentId,
-    [property: JsonPropertyName("articleId")] string ArticleId,
-    [property: JsonPropertyName("userId")] string UserId,
-    [property: JsonPropertyName("content")] string Content,
-    [property: JsonPropertyName("createdAt")] DateTime CreatedAt
-);
+public class CommentCreatedEvent
+{
+  [JsonPropertyName("id")]
+  public string CommentId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("articleId")]
+  public string ArticleId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("userId")]
+  public string UserId { get; set; } = string.Empty;
+  
+  [JsonPropertyName("content")]
+  public string Content { get; set; } = string.Empty;
+  
+  [JsonPropertyName("createdAt")]
+  public DateTime CreatedAt { get; set; }
+}
