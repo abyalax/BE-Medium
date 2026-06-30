@@ -2,7 +2,7 @@
 using MediatR;
 
 using Medium.Api.Common.Constant;
-using Medium.Api.Domain.Bookmark.Command;
+using Medium.Api.Domain.Bookmark.Commands;
 using Medium.Api.Domain.Bookmark.Queries;
 using Medium.Api.Infrastructure.Auth;
 using Medium.Api.Infrastructure.Http;
@@ -37,7 +37,7 @@ public class BookmarkController(IMediator mediator, CurrentUser currentUser) : C
   {
     var command = new DeleteBookmarkByIdCommand(
       UserId: currentUser.Id,
-      id
+      BookmarkId: id
     );
     await mediator.Send(command, cancellationToken);
     return Ok(ApiResponseWriter.Success(true, "Deleted"));
@@ -59,10 +59,10 @@ public class BookmarkController(IMediator mediator, CurrentUser currentUser) : C
   [Authorize(Permissions.Bookmarks.Read)]
   public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
   {
-    var command = new GetBookmarByIdQuery(
+    var query = new GetBookmarByIdQuery(
       BookmarkId: id
     );
-    var response = await mediator.Send(command, cancellationToken);
+    var response = await mediator.Send(query, cancellationToken);
     return Ok(ApiResponseWriter.Success(response));
   }
 

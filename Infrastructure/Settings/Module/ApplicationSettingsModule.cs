@@ -1,6 +1,6 @@
 
-using Medium.Api.Infrastructure.Settings.Validation;
 using Medium.Api.Infrastructure.Settings.Dtos;
+using Medium.Api.Infrastructure.Settings.Validation;
 
 namespace Medium.Api.Infrastructure.Settings.Module;
 

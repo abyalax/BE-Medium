@@ -1,4 +1,5 @@
 using Medium.Api.Domain.Tag.Repositories;
+
 namespace Medium.Api.Domain.Tag.Module;
 
 public static class TagModule

@@ -1,4 +1,6 @@
+using Medium.Api.Domain.Auth.Commands.Handlers;
 using Medium.Api.Domain.Auth.EventHandlers;
+using Medium.Api.Domain.Auth.Queries.Handlers;
 using Medium.Api.Infrastructure.Auth;
 
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +17,21 @@ public static class AuthModule
 
     services.AddScoped<OnUserRegisteredHandler>();
     services.AddScoped<OnUserLoggedInHandler>();
+
+    services.AddScoped<LoginHandler>();
+    services.AddScoped<RegisterHandler>();
+    services.AddScoped<AssignPermissionToRoleHandler>();
+    services.AddScoped<AssignRoleToUserHandler>();
+    services.AddScoped<CreateRoleHandler>();
+    services.AddScoped<DeleteRoleHandler>();
+    services.AddScoped<UpdateRoleHandler>();
+    services.AddScoped<GetAllPermissionsHandler>();
+    services.AddScoped<GetAllRolesHandler>();
+    services.AddScoped<GetPermissionByIdHandler>();
+    services.AddScoped<GetPermissionsByRoleHandler>();
+    services.AddScoped<GetPermissionsByUserHandler>();
+    services.AddScoped<GetRoleByIdHandler>();
+    services.AddScoped<GetUserByIdHandler>();
 
     return services;
   }

@@ -1,4 +1,5 @@
-
+using Medium.Api.Domain.Article.Commands.Handlers;
+using Medium.Api.Domain.Article.Queries.Handlers;
 using Medium.Api.Domain.Article.Repositories;
 
 namespace Medium.Api.Domain.Article.Module;

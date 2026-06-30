@@ -4,7 +4,7 @@ using Medium.Api.Domain.Bookmark.Repositories;
 using Medium.Api.Infrastructure.Cache.Services;
 using Medium.Api.Infrastructure.Exceptions;
 
-namespace Medium.Api.Domain.Bookmark.Command.Handlers;
+namespace Medium.Api.Domain.Bookmark.Commands.Handlers;
 
 public class DeleteBookmarkByIdHandler(
   BookmarkStoreRepository storeRepository,

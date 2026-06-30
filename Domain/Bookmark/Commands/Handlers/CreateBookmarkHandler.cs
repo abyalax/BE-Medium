@@ -7,7 +7,7 @@ using Medium.Api.Infrastructure.Exceptions;
 
 using BookmarkModel = Medium.Api.Models.Bookmark;
 
-namespace Medium.Api.Domain.Bookmark.Command.Handlers;
+namespace Medium.Api.Domain.Bookmark.Commands.Handlers;
 
 public class CreateBookmarkHandler(
   BookmarkStoreRepository storeRepository,

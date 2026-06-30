@@ -8,7 +8,6 @@ public static class CommentModule
   {
     services.AddScoped<CommentQueryRepository>();
     services.AddScoped<CommentStoreRepository>();
-
     return services;
   }
 }

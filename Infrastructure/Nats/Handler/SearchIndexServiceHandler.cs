@@ -10,17 +10,17 @@ public class SearchIndexServiceHandler(ILogger<SearchIndexServiceHandler> logger
     try
     {
       logger.LogInformation("Search Index Service: Processing ArticlePublished event for article {ArticleId}", @event.ArticleId);
-      
+
       // Simulate search indexing
       // In a real implementation, this would:
       // - Index the article content
       // - Update search indexes
       // - Add to Elasticsearch/Meilisearch
       // - Update tags and metadata
-      
+
       await Task.Delay(150, cancellationToken); // Simulate indexing time
-      
-      logger.LogInformation("Search Index Service: Successfully indexed article {ArticleId} '{Title}'", 
+
+      logger.LogInformation("Search Index Service: Successfully indexed article {ArticleId} '{Title}'",
         @event.ArticleId, @event.Title);
     }
     catch (Exception ex)

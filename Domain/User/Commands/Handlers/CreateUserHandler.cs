@@ -49,7 +49,7 @@ public class CreateUserHandler(
       if (roles.Count != roleIds.Distinct().Count())
         throw new NotFoundException("One or more roles were not found");
 
-      return roleIds.Distinct().ToArray();
+      return [.. roleIds.Distinct()];
     }
 
     var readerRole = await userQueryRepository.GetRoleByNameAsync("Reader", cancellationToken)

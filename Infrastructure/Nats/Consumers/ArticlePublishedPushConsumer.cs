@@ -1,9 +1,9 @@
-using Microsoft.Extensions.DependencyInjection;
-
 using Medium.Api.Infrastructure.Events;
 using Medium.Api.Infrastructure.Interface;
 using Medium.Api.Infrastructure.Nats.Events;
 using Medium.Api.Infrastructure.Nats.Services;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Medium.Api.Infrastructure.Nats.Consumers;
 
@@ -25,7 +25,7 @@ public class ArticlePublishedPushConsumer(
     try
     {
       _logger.LogInformation("Starting ArticlePublishedPushConsumer for subject {Subject}", NatsSubjects.ArticlePublished);
-      
+
       await _pushConsumer.SubscribeAsync<ArticlePublishedEvent>(
         "MEDIUM_EVENTS",
         NatsSubjects.ArticlePublished,
@@ -33,7 +33,7 @@ public class ArticlePublishedPushConsumer(
         {
           using var scope = _serviceProvider.CreateScope();
           var handlers = scope.ServiceProvider.GetServices<IEventHandler<ArticlePublishedEvent>>();
-          
+
           var tasks = handlers.Select(handler => handler.HandleAsync(@event, linkedCancellationToken));
           await Task.WhenAll(tasks);
         },

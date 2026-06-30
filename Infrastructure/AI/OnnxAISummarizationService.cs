@@ -102,7 +102,7 @@ public class OnnxAISummarizationService(
         if (setInputIdsMethod != null)
         {
           var inputIds = sequences[0].ToArray();
-          setInputIdsMethod.Invoke(generatorParams, new object[] { inputIds, (ulong)inputIds.Length, (ulong)1 });
+          setInputIdsMethod.Invoke(generatorParams, [inputIds, (ulong)inputIds.Length, (ulong)1]);
         }
         else
         {

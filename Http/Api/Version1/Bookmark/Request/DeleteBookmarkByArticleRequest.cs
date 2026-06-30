@@ -1,12 +1,12 @@
 using FluentValidation;
 
-using Medium.Api.Domain.Bookmark.Command;
+using Medium.Api.Domain.Bookmark.Commands;
 
 namespace Medium.Api.Http.Api.Version1.Bookmark.Request;
 
-public class DeleteBookmarkByArticleRequest : AbstractValidator<DeleteBookmarkByArticleCommand>
+public class DeleteBookmarkByArticleValidator : AbstractValidator<DeleteBookmarkByArticleCommand>
 {
-  public DeleteBookmarkByArticleRequest()
+  public DeleteBookmarkByArticleValidator()
   {
     RuleFor(x => x.ArticleId)
       .Must(guid => Guid.TryParse(guid.ToString(), out _))

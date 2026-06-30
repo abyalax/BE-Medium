@@ -11,6 +11,7 @@ using Medium.Api.Domain.Notification.Module;
 using Medium.Api.Domain.ReadingHistory.Module;
 using Medium.Api.Domain.Tag.Module;
 using Medium.Api.Domain.User.Module;
+using Medium.Api.Infrastructure.AI;
 using Medium.Api.Infrastructure.Behaviors;
 using Medium.Api.Infrastructure.Cache.Module;
 using Medium.Api.Infrastructure.Database;
@@ -21,10 +22,9 @@ using Medium.Api.Infrastructure.Lifecycle;
 using Medium.Api.Infrastructure.Nats;
 using Medium.Api.Infrastructure.Nats.Module;
 using Medium.Api.Infrastructure.Scheduler.Module;
+using Medium.Api.Infrastructure.Settings.Module;
 using Medium.Api.Infrastructure.Storage;
 using Medium.Api.Infrastructure.Storage.Module;
-using Medium.Api.Infrastructure.Settings.Module;
-using Medium.Api.Infrastructure.AI;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
